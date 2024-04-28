@@ -1,7 +1,6 @@
-import Card from './Card.js';
 import {errorMessage, durstenfeldShuffle} from '../help.js';
 
-export default function CardDeck(name, id = '[CardDeckId]') {
+export default function CardDeck(name, id) {
     this.type = 'CARD_DECK';
 
     this.id = id;
@@ -25,12 +24,28 @@ CardDeck.prototype.getAllCards = function() {
     return this.cardList;
 }
 
-CardDeck.prototype.numberOfCards = function() {
+CardDeck.prototype.getNumberOfCards = function() {
     return this.cardList.length;
 }
 
-CardDeck.prototype.getCard = function(index) {
-    return this.cardList[index];
+CardDeck.prototype.getCard = function(id) {
+    for(let card of this.cardList)
+        if(card.id == id) {
+            return card;
+        }
+    
+    errorMessage(`Could not find card with id ${id}!`);
+    return null;
+}
+
+CardDeck.prototype.getCardIndex = function(id) {
+
+    for(let i = 0; i < this.cardList.length; i++)
+        if(this.cardList[i].id == id)
+            return i;
+
+    errorMessage(`Could not find card index with id ${id}!`);
+    return -1;
 }
 
 CardDeck.prototype.remove = function(index) {

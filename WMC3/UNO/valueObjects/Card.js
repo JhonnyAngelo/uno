@@ -1,8 +1,8 @@
 import {inArray, errorMessage} from '../help.js';
 
-export default function Card(color, symbol, id = '[CardId]') {
+export default function Card(id, color, symbol) {
     this.id = id;
-    this.valid = true;
+    this.valid = true; 
     
     // valid color
     if(inArray(color, ['red', 'blue', 'green', 'yellow', 'black'])) {
@@ -29,6 +29,10 @@ export default function Card(color, symbol, id = '[CardId]') {
         this.valid = false;
         errorMessage(`Color '${color}' and symbol '${symbol}' do not match!`);
     }
+
+    // color that is chosen by the player (only for wild cards)
+    if(this.isWild())
+        this.chosenColor = null;
 
     // card description
     switch (this.symbol) {
@@ -72,4 +76,24 @@ export default function Card(color, symbol, id = '[CardId]') {
         default:
           this.description = '[Description]';
     }
+}
+
+Card.prototype.isWild = function() {
+    return this.color == 'black' && this.symbol.includes('wild');
+}
+
+Card.prototype.getChosenColor = function() {
+    if(this.isWild())
+        return this.chosenColor;
+    return null;
+}
+
+Card.prototype.setChosenColor = function(color) {
+    if(inArray(color, ['red', 'blue', 'green', 'yellow']))
+        this.chosenColor = color;
+}
+
+Card.prototype.resetChosenColor = function() {
+    if(this.isWild())
+        this.chosenColor = null;
 }

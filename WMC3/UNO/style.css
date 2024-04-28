@@ -1,0 +1,7 @@
+#viewport.usermode #aDeck {
+    display: none;
+}
+
+#viewport.devmode #aDeck {
+    display: block;
+}
