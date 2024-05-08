@@ -2,7 +2,7 @@ import ViewHandler from './ViewHandler.js';
 import Facade from './Facade.js';
 
 function start() {
-    let viewHandler = new ViewHandler(new Facade(), 'sprites', 'viewport', 'drawButton');
+    let viewHandler = new ViewHandler(new Facade(), 'sprites', 'table', 'deck');
 
     viewHandler.startGame();
 }

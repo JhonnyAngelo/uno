@@ -65,3 +65,12 @@ CardDeck.prototype.remove = function(index) {
 CardDeck.prototype.clear = function() {
     this.cardList = [];
 }
+
+CardDeck.prototype.findCard = function(card) {
+    for(let i = 0; i < this.cardList.length; i++) {
+        if(this.cardList[i].equals(card)) {
+            return i;
+        }
+    }
+    return -1;
+}

@@ -1,7 +1,84 @@
-#viewport.usermode #aDeck {
+#viewport.devmode #aDeck {
+    display: block;
+}
+
+.hidden, #viewport.usermode #aDeck, #viewport.usermode #table h6 {
+    display: none !important;
+}
+
+#viewport.usermode #table {
+    display: flex;
+    justify-content: space-evenly;
+}
+
+/* -------- card draw button -------- */
+
+#drawButton {
+    border: none;
+    background-color: transparent;
+}
+
+#drawButton img {
+    position: absolute;
+    width: 180px;
+}
+
+.gif {
     display: none;
 }
 
-#viewport.devmode #aDeck {
-    display: block;
+#drawButton:hover > .gif {
+    display: inline;
+}
+
+.sprite, #drawButton:active > .sprite {
+    display: inline;
+}
+
+/* ------- color select window ------- */
+
+.window {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+
+    display: flex;
+    justify-content: center;
+}
+
+.window img {
+    position: fixed;
+    transition: transform 0.2s;
+    transform: translate(-50%, -50%);
+}
+
+.window img:first-child {
+    height: 100%;
+    top: 50%;
+    left: 50%;
+}
+
+#selectRed {
+    height: 31.6%;
+    top: 35.9%;
+    left: 44.85%;
+}
+
+#selectBlue {
+    height: 31.7%;
+    top: 35.9%;
+    left: 58.4%;
+}
+
+#selectGreen {
+    height: 28.3%;
+    top: 65.8%;
+    left: 53.9%;
+}
+
+#selectYellow {
+    height: 26.7%;
+    top: 65.1%;
+    left: 40.3%;
 }

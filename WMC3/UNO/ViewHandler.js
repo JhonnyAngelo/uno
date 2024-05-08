@@ -2,23 +2,27 @@ import GameHandler from './GameHandler.js';
 import Player from './valueObjects/Player.js';
 import {errorMessage} from './help.js';
 
-export default function ViewHandler(facade, spritesLocation, viewportId, drawButtonId) {
+export default function ViewHandler(facade, spritesLocation, tableId, deckId) {
     
-    this.gameHandler = new GameHandler(facade);
+    this.gameHandler = new GameHandler(facade, () => this.renderAll());
     this.facade = facade;
     this.spritesLocation = spritesLocation;
-    this.viewport = document.getElementById(viewportId);
-    this.drawButtonEl = document.getElementById(drawButtonId);
+    this.tableContainer = document.getElementById(tableId);
+    this.deckContainer = document.getElementById(deckId);
+    this.drawButtonEl = null;
 
     this.startGame = function() {
         
         this.gameHandler.startGame(new Player('p1', 'user'), new Player('p2', 'pc', true));
         this.renderAll();
-        this.bind();
     }
 
     this.renderAll = function() {
-        this.viewport.innerHTML = '';
+        this.tableContainer.innerHTML = '';
+        this.deckContainer.innerHTML = '';
+
+        this.createAndBindAll();
+
         this.renderDeck(this.facade.getAvailableCardsDeck(), false);
         this.renderDeck(this.facade.getTableDeck(), false, true);
 
@@ -34,9 +38,6 @@ export default function ViewHandler(facade, spritesLocation, viewportId, drawBut
             let deckEl = document.createElement('div');
             
             deckEl.id = cardDeck.id;
-            if(playerDeck)
-                deckEl.className = 'playerDeck';
-
             deckEl.innerHTML = `<h6>${cardDeck.name}</h6>`;
             
             if(topCardOnly) {
@@ -47,7 +48,12 @@ export default function ViewHandler(facade, spritesLocation, viewportId, drawBut
                     deckEl.append(this.getCardImg(card));
             }
 
-            this.viewport.append(deckEl);
+            if(playerDeck) {
+                deckEl.className = 'playerDeck';
+                this.deckContainer.append(deckEl);
+            } else {
+                this.tableContainer.append(deckEl);
+            }
         
         } else {
             errorMessage('Invalid deck passed to renderDeck()!');
@@ -66,8 +72,10 @@ export default function ViewHandler(facade, spritesLocation, viewportId, drawBut
 
             if(card.color != 'black') {
                 imgEl.src += `${card.color[0]}_${card.symbol}.png`;
-            } else {
+            } else if(card.getChosenColor() == null) {
                 imgEl.src += `w_${card.symbol}.png`;
+            } else {
+                imgEl.src += `w_${card.symbol}_${card.getChosenColor()[0]}.png`;
             }
 
             imgEl.width = '90';
@@ -83,7 +91,7 @@ export default function ViewHandler(facade, spritesLocation, viewportId, drawBut
                     imgEl.classList.add('animationSlideDown');
                     setTimeout(() => {
                         imgEl.classList.remove('animationSlideDown');
-                        this.gameHandler.makeTurn(parentId, imgEl.id);
+                        this.gameHandler.makeTurn(parentId, imgEl.id, () => this.gameHandler.selectColor());
                         this.renderAll();
                     }, 500);
                 
@@ -100,12 +108,84 @@ export default function ViewHandler(facade, spritesLocation, viewportId, drawBut
         }
     }
 
-    ViewHandler.prototype.bind = function() {
-        
-        this.drawButtonEl.onclick = () => {
+    ViewHandler.prototype.createAndBindAll = function() {
+        this.createAndbindDrawButton();
+        this.createAndbindColorSelectBtn();
+    }
 
+    ViewHandler.prototype.createAndbindDrawButton = function() {
+        this.drawButtonEl = document.createElement('button');
+        this.drawButtonEl.id = 'drawButton';
+        this.drawButtonEl.type = 'button';
+
+        // sprite
+        let imgEl = document.createElement('img');
+        imgEl.src = `${this.spritesLocation}/drawDeck.png`;
+        imgEl.className = 'sprite';
+
+        this.drawButtonEl.append(imgEl);
+
+        // gif (when hovered over)
+        let gifEl = document.createElement('img');
+        //gifEl.src = `${this.spritesLocation}/drawDeck_hover.gif`;
+        gifEl.className = 'gif';
+
+        this.drawButtonEl.onmouseenter = () => {
+            gifEl.src = `${this.spritesLocation}/drawDeck_hover.gif`;
+            this.drawButtonEl.append(gifEl);
+        }
+
+        this.drawButtonEl.onmouseleave = () => {
+            gifEl.src = `${this.spritesLocation}/drawDeck_hover.gif`;
+            gifEl.remove();
+        }
+
+        this.drawButtonEl.onclick = () => {
             let player = this.facade.getPlayerInTurn();
             this.gameHandler.optionalDraw(player, () => this.renderAll());
         };
+
+        this.tableContainer.append(this.drawButtonEl);
+    }
+
+    ViewHandler.prototype.createAndbindColorSelectBtn = function() {
+        let colorOptions = ['red', 'blue', 'green', 'yellow'];
+        let windowEl = document.createElement('div');
+        
+        windowEl.id = 'colorSelectBox';
+
+        let windowImg = document.createElement('img');
+        windowImg.alt = 'select a color';
+        windowImg.src = `${this.spritesLocation}/select_color.png`;
+        windowEl.append(windowImg);
+
+        for(let color of colorOptions) {
+            let colorImgEl = document.createElement('img');
+            colorImgEl.color = color;
+            colorImgEl.alt = `select ${color}`;
+            colorImgEl.src = `${this.spritesLocation}/select_${color}.png`;
+            
+            colorImgEl.onclick = () => {
+                this.facade.getTopCard().setChosenColor(colorImgEl.color);
+                this.hide(windowEl.id, true);
+            }
+
+            windowEl.append(colorImgEl);
+        }
+    }
+
+    ViewHandler.prototype.selectColor = function() {
+        let windowEl = document.getElementById(windowId);
+
+        this.hide(windowEl, true);
+    }
+
+    ViewHandler.prototype.hide = function(elementId, hide) {
+        let element = document.getElementById(elementId);
+
+        if(element && hide && element.classList.contains('hidden') == false)
+            element.classList.add('hidden');
+        else if(element && hide == false && element.classList.contains('hidden'))
+            element.classList.remove('hidden');
     }
 }

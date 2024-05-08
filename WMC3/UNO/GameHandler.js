@@ -1,12 +1,15 @@
 import Card from './valueObjects/Card.js';
 import CardDeck from './valueObjects/CardDeck.js';
-import {errorMessage, inArray} from './help.js';
+import {errorMessage, inArray, getRandomInt} from './help.js';
 
-export default function GameHandler(facade) {
+export default function GameHandler(facade, renderCallback) {
     this.type = 'ACTION_LISTENER';
     
     this.facade = facade;
     this.drawCount = 0;
+
+    // callbacks
+    this.renderCallback = renderCallback;
 }
 
 GameHandler.prototype.startGame = function(...players) {
@@ -203,7 +206,7 @@ GameHandler.prototype.optionalDraw = function(player, renderCallback) {
     }
 }
 
-GameHandler.prototype.makeTurn = function(playerId, cardId) {
+GameHandler.prototype.makeTurn = function(playerId, cardId, colorSelectCallback) {
     let player = this.facade.getPlayer(playerId);
     let card = player.deck.getCard(cardId);
 
@@ -213,16 +216,19 @@ GameHandler.prototype.makeTurn = function(playerId, cardId) {
         this.facade.removePlayerCard(playerId, cardId);
         this.facade.tableDeck.add(card);
 
-        this.checkSpecialCard(card, playerId);
+        this.checkSpecialCard(card, playerId, colorSelectCallback);
         this.determineEnd();
         this.moveTurn(player);
+        return true;
     
     } else if(this.validCard(card) == false) {
         errorMessage(`You can't place that card!`);
     
     } else {
-        errorMessage("You're not in turn! (You were skipped)");
+        errorMessage(`You're not in turn! (You were skipped)`);
     }
+
+    return false;
 }
 
 GameHandler.prototype.moveTurn = function(currPlayer) {
@@ -233,6 +239,12 @@ GameHandler.prototype.moveTurn = function(currPlayer) {
     nextPlayer.stateInTurn = true;
     nextPlayer.optionalDrawPossible = true;
     this.assignDraw(nextPlayer);
+
+    /*
+    // start Computer AI if he's in turn
+    if(nextPlayer.type == 'COMPUTER_PLAYER')
+        this.computerStart(nextPlayer);
+    */
 }
 
 GameHandler.prototype.getNextPlayer = function(currPlayerId, considerStateSkipped = true) {
@@ -284,15 +296,15 @@ GameHandler.prototype.recommendCard = function(player) {
     return null;
 }
 
-GameHandler.prototype.checkSpecialCard = function(card, currPlayerId) {
+GameHandler.prototype.checkSpecialCard = function(card, currPlayerId, colorSelectCallback) {
     // create a functionObject/Array
     let specialCards = {};
     specialCards['draw_2'] = () => this.increaseDrawCount(2);
     specialCards['reverse'] = () => this.reverseDirection(currPlayerId);
     specialCards['skip'] = () => this.skipNextPlayer(currPlayerId);
 
-    specialCards['wild'] = () => this.wild();
-    specialCards['wild_draw_4'] = () => { this.wild(); this.increaseDrawCount(4); };
+    specialCards['wild'] = () => this.wild(); // colorSelectCallback();
+    specialCards['wild_draw_4'] = () => { this.wild(); /* colorSelectCallback(); */ this.increaseDrawCount(4); };
     specialCards['wild_forced_swap'] = () => { this.wild(); this.forceASwap(currPlayerId); }
 
     if(inArray(card.symbol, ['draw_2', 'reverse', 'skip', 'wild', 'wild_draw_4', 'wild_forced_swap'])) {
@@ -339,4 +351,63 @@ GameHandler.prototype.forceASwap = function(currPlayerId) {
     }
     // ask the player to pick another player to swap cards with
         // if there are only two players he automatically swaps with his only opponent
+}
+
+// ---------------------------------------- Computer AI ----------------------------------------
+
+GameHandler.prototype.computerStart = function(computerPlayer) {
+    
+    setTimeout(() => {
+        this.computerChooseCard(computerPlayer);
+    }, getRandomInt(2000, 3000));
+}
+
+GameHandler.prototype.computerChooseCard = function(computerPlayer, difficulty = 1) {
+    let topCard = this.facade.getTopCard();
+
+    console.log('[PC is evaluating his turn...]');
+
+    let wildCards = [
+        new Card(0, 'black', 'wild'),
+        new Card(0, 'black', 'wild_draw_4'),
+        new Card(0, 'black', 'wild_forced_swap')
+    ];
+    
+    let specialCards = [
+        new Card(0, topCard.color, 'draw_2'),
+        new Card(0, topCard.color, 'reverse'),
+        new Card(0, topCard.color, 'skip')
+    ];
+
+    switch(difficulty) {
+        case 1:
+            
+            if(this.computerPlaceRandomCard(computerPlayer) == false) {
+                this.gameHandler.optionalDraw(player, this.renderCallback);
+            }
+            break;
+
+        default:
+            errorMessage(`Difficulty level ${difficulty} does not exist!`);
+    }
+
+    // (0. Place draw_2 if in the previous turn one has been put - same for wild_draw_4)
+    // 1. Place wild_draw_4 or draw_2 if the next player has UNO
+    
+    // if you have fewer cards than the opponent:
+
+    // 3. see if you have any special card(s) you can use and finally place a normal card in the color you need
+    // 2. see how many cards the opponent has (if under 3 - use a wild_draw_4)
+    // 99. place whatever you can
+}
+
+GameHandler.prototype.computerPlaceRandomCard = function(computerPlayer) {
+    for(let card of computerPlayer.deck.getAllCards()) {
+        if(this.validCard(card)) {
+            this.makeTurn(computerPlayer.id, card.id, () => this.selectColor());
+            return true;
+        }
+    }
+    console.log("[PC doesn't have any cards - picking a card from the table...]");
+    return false;
 }
