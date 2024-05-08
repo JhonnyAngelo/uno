@@ -77,3 +77,23 @@ Facade.prototype.getTableDeck = function() {
 Facade.prototype.getAvailableCardsDeck = function() {
     return this.availableCardsDeck;
 }
+
+Facade.prototype.getCardById = function(id) {
+    let deckList = [this.tableDeck, this.availableCardsDeck];
+    
+    let i = 2;
+    for(let player of this.playerList) {
+        deckList[i++] = player.deck;
+    }
+
+    for(let deck of deckList) {
+        for(let card of deck.getAllCards()) {
+            if(card.id == id) {
+                return card;
+            }
+        }
+    }
+
+    errorMessage(`Could not find card with id ${id} (in any deck)!`);
+    return null;
+}

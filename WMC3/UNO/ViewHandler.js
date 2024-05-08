@@ -4,7 +4,7 @@ import {errorMessage} from './help.js';
 
 export default function ViewHandler(facade, spritesLocation, tableId, deckId) {
     
-    this.gameHandler = new GameHandler(facade, () => this.renderAll());
+    this.gameHandler = new GameHandler(facade);
     this.facade = facade;
     this.spritesLocation = spritesLocation;
     this.tableContainer = document.getElementById(tableId);
@@ -13,11 +13,20 @@ export default function ViewHandler(facade, spritesLocation, tableId, deckId) {
 
     this.startGame = function() {
         
+        this.setCallBacks();
         this.gameHandler.startGame(new Player('p1', 'user'), new Player('p2', 'pc', true));
         this.renderAll();
     }
 
+    this.setCallBacks = function() {
+        this.gameHandler.setCallbackRender(() => this.renderAll());
+        this.gameHandler.setCallbackCardPlacement((cardId) => this.animateCardPlacement(cardId));
+    }
+
     this.renderAll = function() {
+
+        console.log('[rendering viewport]');
+
         this.tableContainer.innerHTML = '';
         this.deckContainer.innerHTML = '';
 
@@ -86,25 +95,47 @@ export default function ViewHandler(facade, spritesLocation, tableId, deckId) {
                 let parentId = imgEl.parentNode.id;
                 let player = this.facade.getPlayer(parentId);
 
-                if(player && player.isInTurn()) {
+                if(this.cardBelongsToUser(parentId) && player && player.isInTurn()) {
                     
+                    this.animateCardPlacement(imgEl.id);
+                    /*
                     imgEl.classList.add('animationSlideDown');
                     setTimeout(() => {
                         imgEl.classList.remove('animationSlideDown');
                         this.gameHandler.makeTurn(parentId, imgEl.id, () => this.gameHandler.selectColor());
                         this.renderAll();
                     }, 500);
+                    */
                 
                 } else if(player) {
                     errorMessage("You're not in turn!");
                 }
-            };
+            }
 
             return imgEl;
 
         } else {
             errorMessage('Invalid card passed to getCardImg()!');
             return null;
+        }
+    }
+
+    ViewHandler.prototype.animateCardPlacement = function(cardId) {
+        let imgEl = document.getElementById(cardId);
+        let parentId = imgEl.parentNode.id;
+
+        if(this.gameHandler.validCard(this.facade.getCardById(cardId))) {
+
+            imgEl.classList.add('animationSlideDown');
+            setTimeout(() => {
+                imgEl.classList.remove('animationSlideDown');
+                this.gameHandler.makeTurn(parentId, cardId, () => this.gameHandler.selectColor());
+                this.renderAll();
+            }, 500);
+        
+        } else {
+            errorMessage(`You can't place that card!`);
+            // another animation (short; left-right-left-right) to make user understand that he can't place you
         }
     }
 
@@ -142,7 +173,7 @@ export default function ViewHandler(facade, spritesLocation, tableId, deckId) {
 
         this.drawButtonEl.onclick = () => {
             let player = this.facade.getPlayerInTurn();
-            this.gameHandler.optionalDraw(player, () => this.renderAll());
+            this.gameHandler.optionalDraw(player);
         };
 
         this.tableContainer.append(this.drawButtonEl);
@@ -187,5 +218,9 @@ export default function ViewHandler(facade, spritesLocation, tableId, deckId) {
             element.classList.add('hidden');
         else if(element && hide == false && element.classList.contains('hidden'))
             element.classList.remove('hidden');
+    }
+
+    ViewHandler.prototype.cardBelongsToUser = function(parentId) {
+        return parentId == this.facade.getPlayerByIndex(0).id;
     }
 }
