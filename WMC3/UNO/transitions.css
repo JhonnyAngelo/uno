@@ -2,7 +2,7 @@
     transition: transform 0.2s;
 }
 
-.playerDeck .card:hover {
+.playerDeck.user .card:hover {
     transform: scale(1.3);
 }
 
@@ -16,6 +16,20 @@
     }
 }
 
-.animationSlideDown {
+@keyframes slideUp {
+    from {
+        transform: translateY(0);
+    }
+
+    to {
+        transform: translateY(-600px);
+    }
+}
+
+.playerDeck.user .animationSlideDown {
     animation: slideDown 0.9s;
+}
+
+.playerDeck.opponent .animationSlideDown {
+    animation: slideUp 0.9s;
 }

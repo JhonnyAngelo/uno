@@ -11,6 +11,19 @@
     justify-content: space-evenly;
 }
 
+#table {
+    margin-bottom: 4em;
+}
+
+.playerDeck {
+    padding: 1.5em 1em;
+}
+
+#aDeck {
+    margin: 3em;
+    margin-top: 10em;
+}
+
 /* -------- card draw button -------- */
 
 #drawButton {
@@ -35,50 +48,78 @@
     display: inline;
 }
 
+/* ------- userDeck background ------- */
+
+.playerDeck.user {
+    background-color: rgba(169, 169, 169, 0.5);
+}
+
+.playerDeck div {
+    padding: 10px;
+}
+
+.playerDeck .deckCover {
+    background-color: rgba(255, 255, 255, 0.5);
+
+    position: fixed;
+    margin: -1.5rem -1em;
+    width: 100%;
+    padding: 7em;
+
+    /* z-index: 3; !!!!!!!!!!!!!!!!!!!!? */
+}
+
 /* ------- color select window ------- */
 
 .window {
     position: fixed;
-    top: 0;
-    left: 0;
-    height: 100vh;
-
-    display: flex;
-    justify-content: center;
-}
-
-.window img {
-    position: fixed;
-    transition: transform 0.2s;
-    transform: translate(-50%, -50%);
-}
-
-.window img:first-child {
-    height: 100%;
     top: 50%;
     left: 50%;
+    transform: translate(-50%, -50%);
+    
+    height: 100%;
+
+    /*
+    display: flex;
+    justify-content: center;
+    */
 }
 
-#selectRed {
+#colorSelect {
+    /*
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transition: transform 0.2s; 
+    transform: translate(-50%, -50%);
+    */
+    height: 100%;
+}
+
+#redSelect {
+    position: absolute;
     height: 31.6%;
-    top: 35.9%;
-    left: 44.85%;
+    top: 20.1%;
+    left: 14%;
 }
 
-#selectBlue {
-    height: 31.7%;
-    top: 35.9%;
-    left: 58.4%;
+#blueSelect {
+    position: absolute;
+    height: 31.8%;
+    top: 20%;
+    left: 47.2%;
 }
 
-#selectGreen {
+#greenSelect {
+    position: absolute;
     height: 28.3%;
-    top: 65.8%;
-    left: 53.9%;
+    top: 51.8%;
+    left: 33.4%;
 }
 
-#selectYellow {
+#yellowSelect {
+    position: absolute;
     height: 26.7%;
-    top: 65.1%;
-    left: 40.3%;
+    top: 51.7%;
+    left: 11%;
 }

@@ -7,6 +7,8 @@ export default function GameHandler(facade) {
     
     this.facade = facade;
     this.drawCount = 0;
+    this.gameStopped = false;
+    this.playerInTurn = null;
 }
 
 GameHandler.prototype.setCallbackRender = function(callback) {
@@ -17,6 +19,10 @@ GameHandler.prototype.setCallbackCardPlacement = function(callback) {
     this.cardPlacementCallback = callback;
 }
 
+GameHandler.prototype.setCallbackWild = function(callback) {
+    this.wildCallback = callback;
+}
+
 GameHandler.prototype.startGame = function(...players) {
 
     if(players.length >= 2) {
@@ -25,10 +31,46 @@ GameHandler.prototype.startGame = function(...players) {
             this.addPlayer(player);
         }
         this.assignDecks(this.generateGlobalCardDeck());
-        this.facade.getPlayerByIndex(0).stateInTurn = true;
+
+        let user = this.facade.getPlayerByIndex(0);
+        user.stateInTurn = true;
+        this.playerInTurn = user;
     
     } else {
         errorMessage('There must be at least 2 players!')
+    }
+}
+
+GameHandler.prototype.stopGame = function() {
+    if(this.gameStopped == false) {
+        
+        this.gameStopped = true;
+        console.log('\x1b[36m%s\x1b[0m', '[game stopped]');
+
+        for(let player of this.facade.getPlayerList())
+            player.stateInTurn = false;
+
+    } else {
+        errorMessage('Game is already stopped!');
+    }
+}
+
+GameHandler.prototype.continueGame = function(moveTurn) {
+    if(this.gameStopped == true) {
+
+        this.gameStopped = false;
+        console.log('\x1b[36m%s\x1b[0m', '[game continued]');
+    
+
+        if(moveTurn == false)
+            this.playerInTurn.stateInTurn = true;
+        else if(moveTurn)
+            this.moveTurn(this.playerInTurn);
+        else
+            errorMessage('Missing parameter moveTurn in continueGame()!');
+
+    } else {
+        errorMessage('Game is already underway!');
     }
 }
 
@@ -131,6 +173,8 @@ GameHandler.prototype.determineEnd = function() {
                 player.stateInTurn = false;
                 player.stateSkipped = false;
             }
+
+            this.stopGame();
         }
     }
 }
@@ -140,6 +184,7 @@ GameHandler.prototype.checkUNO = function() {
     // check if a player has only one card
     for(let player of this.playerList) {
         if(player.hasUNO()) {
+
             // IMPORTANT:
                 // should the player shout UNO somehow (idk, maybe write it or press a button...)?
                 // OR: should the screen just shout UNO automatically?
@@ -210,13 +255,13 @@ GameHandler.prototype.optionalDraw = function(player) {
         }
 
     } else {
-        errorMessage("You can't draw a card now!");
+        errorMessage(`You can't draw a card now, ${player.name}!`);
     }
 
     return assignedCard;
 }
 
-GameHandler.prototype.makeTurn = function(playerId, cardId, colorSelectCallback) {
+GameHandler.prototype.makeTurn = async function(playerId, cardId) {
     let player = this.facade.getPlayer(playerId);
     let card = player.deck.getCard(cardId);
 
@@ -226,9 +271,10 @@ GameHandler.prototype.makeTurn = function(playerId, cardId, colorSelectCallback)
         this.facade.removePlayerCard(playerId, cardId);
         this.facade.tableDeck.add(card);
 
-        this.checkSpecialCard(card, playerId, colorSelectCallback);
+        this.checkSpecialCard(card, playerId);
         this.determineEnd();
         this.moveTurn(player);
+
         return true;
     
     } else if(this.validCard(card) == false) {
@@ -242,17 +288,24 @@ GameHandler.prototype.makeTurn = function(playerId, cardId, colorSelectCallback)
 }
 
 GameHandler.prototype.moveTurn = function(currPlayer) {
+    
+    if(this.gameStopped)
+        return;
+    
     currPlayer.stateInTurn = false;
     currPlayer.optionalDrawPossible = true;
 
     let nextPlayer = this.getNextPlayer(currPlayer.id);
     nextPlayer.stateInTurn = true;
+    this.playerInTurn = nextPlayer;
     nextPlayer.optionalDrawPossible = true;
     this.assignDraw(nextPlayer);
 
     // start Computer AI if he's in turn
     if(nextPlayer.type == 'COMPUTER_PLAYER')
         this.computerStart(nextPlayer);
+
+    this.renderCallback();
 }
 
 GameHandler.prototype.getNextPlayer = function(currPlayerId, considerStateSkipped = true) {
@@ -304,16 +357,16 @@ GameHandler.prototype.recommendCard = function(player) {
     return null;
 }
 
-GameHandler.prototype.checkSpecialCard = function(card, currPlayerId, colorSelectCallback) {
+GameHandler.prototype.checkSpecialCard = function(card, currPlayerId) {
     // create a functionObject/Array
     let specialCards = {};
     specialCards['draw_2'] = () => this.increaseDrawCount(2);
     specialCards['reverse'] = () => this.reverseDirection(currPlayerId);
     specialCards['skip'] = () => this.skipNextPlayer(currPlayerId);
 
-    specialCards['wild'] = () => this.wild(currPlayerId); // colorSelectCallback();
-    specialCards['wild_draw_4'] = () => { this.wild(currPlayerId); /* colorSelectCallback(); */ this.increaseDrawCount(4); };
-    specialCards['wild_forced_swap'] = () => { this.wild(currPlayerId); this.forceASwap(currPlayerId); }
+    specialCards['wild'] = () => this.wild(currPlayerId);
+    specialCards['wild_draw_4'] = () => { this.wild(currPlayerId); this.increaseDrawCount(4); };
+    specialCards['wild_forced_swap'] = () => { this.forceASwap(currPlayerId); this.wild(currPlayerId);}
 
     if(inArray(card.symbol, ['draw_2', 'reverse', 'skip', 'wild', 'wild_draw_4', 'wild_forced_swap'])) {
         specialCards[card.symbol]();
@@ -338,24 +391,58 @@ GameHandler.prototype.skipNextPlayer = function(currPlayerId) {
     let nextPlayer = this.getNextPlayer(currPlayerId, false);
     nextPlayer.stateSkipped = true;
 }
-
+/*
 GameHandler.prototype.wild = function(playerId) {
-    // ask the player to pick one of the 4 main colors
     let player = this.facade.getPlayer(playerId);
     let color;
 
-    if(player.type == 'PLAYER') {
+    // swap cards before asking color
+    this.renderCallback();
 
-        //for now with an alert
-        do {
-            color = prompt('Select color: ');
-        } while(inArray(color, ['red', 'blue', 'green', 'yellow']) == false);
+    // because of the renderCallback a setTimeout() is needed
+    setTimeout(() => {
+        if(player.type == 'PLAYER') {
+
+            //for now with an alert
+            do {
+                color = prompt('Select color: ');
+            } while(inArray(color, ['red', 'blue', 'green', 'yellow']) == false);
     
+        } else {
+            color = this.computerChooseColor(player);
+        }
+
+        this.facade.getTopCard().setChosenColor(color);
+
+        // to show the color of the top card
+        this.renderCallback();
+
+        return color;
+    }, 0);
+}
+*/
+GameHandler.prototype.wild = function(playerId) {
+    let player = this.facade.getPlayer(playerId);
+    let color;
+
+    // swap cards before asking color
+    this.renderCallback();
+    
+    if(this.facade.getPlayerIndex(playerId) == 0) { // player is user
+        this.wildCallback();
+
+        // wait for user to select color
+        //while( inArray(this.facade.getTopCard().getChosenColor(), ['red', 'blue', 'green', 'yellow']) == false );
+        
     } else {
         color = this.computerChooseColor(player);
-    }
+        this.facade.getTopCard().setChosenColor(color);
 
-    this.facade.getTopCard().setChosenColor(color);
+        // to show the color of the top card
+        this.renderCallback();
+
+        return color;
+    }
 }
 
 GameHandler.prototype.forceASwap = function(currPlayerId) {
@@ -373,7 +460,7 @@ GameHandler.prototype.forceASwap = function(currPlayerId) {
 
 GameHandler.prototype.computerStart = function(computerPlayer) {
     
-    console.log(`[Player (${computerPlayer.name}) is thinking...]`);
+    console.log(`[player (${computerPlayer.name}) is thinking...]`);
 
     setTimeout(() => {
         this.computerChooseCard(computerPlayer);
