@@ -20,7 +20,7 @@ Facade.prototype.reversePlayerList = function() {
 Facade.prototype.removePlayerCard = function(playerId, cardId) {
     let player = this.getPlayer(playerId);
 
-    console.log("[player (" + player.name + ") made a turn]");
+    console.log(`[player (${player.name}) made a turn]`);
 
     return player.removeCard(cardId);
 }

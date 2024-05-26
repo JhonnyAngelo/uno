@@ -1,11 +1,11 @@
 import GameHandler from './GameHandler.js';
 import Player from './valueObjects/Player.js';
+import GameSettings from './valueObjects/GameSettings.js';
 import {errorMessage} from './help.js';
-import Card from './valueObjects/Card.js';
 
 export default function ViewHandler(facade, spritesLocation, viewportId, tableId, deckId) {
     
-    this.gameHandler = new GameHandler(facade);
+    this.gameHandler = new GameHandler(facade, new GameSettings(true, true, 1));
     this.facade = facade;
     this.spritesLocation = spritesLocation;
 
@@ -17,9 +17,14 @@ export default function ViewHandler(facade, spritesLocation, viewportId, tableId
     this.wildWindowActive = false;
 
     this.startGame = function() {
-        
         this.setCallBacks();
         this.gameHandler.startGame(new Player('p1', 'user'), new Player('p2', 'pc', true));
+        this.renderAll();
+    }
+
+    this.startTestGame = function(deck1, deck2, topCard) {
+        this.startGame();
+        this.gameHandler.assignTestDecks(deck1, deck2, topCard);
         this.renderAll();
     }
 
@@ -27,6 +32,7 @@ export default function ViewHandler(facade, spritesLocation, viewportId, tableId
         this.gameHandler.setCallbackRender(() => this.renderAll());
         this.gameHandler.setCallbackCardPlacement((cardId) => this.animateCardPlacement(cardId));
         this.gameHandler.setCallbackWild(() => this.selectColor());
+        this.gameHandler.setCallbackGameWon((player) => alert(`${player.name} has won!`));
     }
 
     this.clearViewport = function() {
@@ -61,25 +67,30 @@ export default function ViewHandler(facade, spritesLocation, viewportId, tableId
     this.renderDeck = function(cardDeck, playerDeck = true, topCardOnly = false) {
 
         if(cardDeck.type == 'CARD_DECK') {
-            let cardList = cardDeck.getAllCards();
 
             let deckEl = document.createElement('div');
-            
             deckEl.id = cardDeck.id;
             //deckEl.innerHTML = `<h6>${cardDeck.name}</h6>`;
             
+            let deckContainer = document.createElement('div');
+            deckContainer.playerId = cardDeck.id;
+            deckContainer.className = 'deckContainer';
+            deckEl.append(deckContainer);
+
+            let cardList = cardDeck.getAllCards();
+
             if(topCardOnly) {
-                deckEl.append(this.getCardImg(cardList[cardList.length-1]));
+                deckContainer.append(this.getCardImg(cardList[cardList.length-1]));
 
             } else {
                 for(let card of cardList)
-                    deckEl.append(this.getCardImg(card));
+                    deckContainer.append(this.getCardImg(card));
             }
 
             if(playerDeck) {
                 deckEl.className = 'playerDeck';
 
-                if(this.parentIsUser(deckEl.id)) {
+                if(this.isUser(deckEl.id)) {
                     deckEl.classList.add('user');
 
                     // cover cards if user can't place them
@@ -99,6 +110,41 @@ export default function ViewHandler(facade, spritesLocation, viewportId, tableId
 
             } else {
                 this.tableContainer.append(deckEl);
+            }
+
+            // render PC avatar
+
+            if(playerDeck && this.facade.getPlayer(cardDeck.id).type == 'COMPUTER_PLAYER') {
+                
+                let pcEl = document.createElement('div');
+                pcEl.id = 'pc';
+                this.deckContainer.prepend(pcEl);
+
+                let cardCounter = document.createElement('div');
+                cardCounter.id = 'cardCounter';
+                cardCounter.innerHTML = `<div class="circle"><p>${cardDeck.getNumberOfCards()}</p></div>`;
+                pcEl.append(cardCounter);
+
+                let pEl = document.querySelector('#cardCounter > div');
+                if(cardDeck.getNumberOfCards() == 1) {
+                    pEl.style.backgroundColor = 'red';
+                } else {
+                    pEl.style.backgroundColor = 'darkturquoise';
+                }
+
+                let pcAvatar = document.createElement('div');
+                pcAvatar.id = 'pcAvatar';
+                pcEl.append(pcAvatar);
+
+                let pcImg = document.createElement('img');
+                pcImg.alt = 'pc avatar';
+                pcAvatar.append(pcImg);
+                
+                if(cardDeck.getNumberOfCards() <= 9) {
+                    pcImg.src = `sprites/pc/pc_body_proto_${cardDeck.getNumberOfCards()}.png`;
+                } else {
+                    pcImg.src = 'sprites/pc/pc_body_proto_9.png';
+                }
             }
         
         } else {
@@ -129,10 +175,10 @@ export default function ViewHandler(facade, spritesLocation, viewportId, tableId
 
             imgEl.onclick = () => {
 
-                let parentId = imgEl.parentNode.id;
+                let parentId = imgEl.parentNode.playerId;
                 let player = this.facade.getPlayer(parentId);
 
-                if(this.parentIsUser(parentId) && player && player.isInTurn()) {
+                if(this.isUser(parentId) && player && player.isInTurn()) {
 
                     this.animateCardPlacement(imgEl.id);
                 
@@ -151,7 +197,7 @@ export default function ViewHandler(facade, spritesLocation, viewportId, tableId
 
     ViewHandler.prototype.animateCardPlacement = function(cardId) {
         let imgEl = document.getElementById(cardId);
-        let parentId = imgEl.parentNode.id;
+        let parentId = imgEl.parentNode.playerId;
 
         if(this.gameHandler.validCard(this.facade.getCardById(cardId))) {
 
@@ -172,7 +218,7 @@ export default function ViewHandler(facade, spritesLocation, viewportId, tableId
         this.createAndbindDrawButton();
         this.createAndbindColorSelectBtn();
     }
-
+    
     ViewHandler.prototype.createAndbindDrawButton = function() {
         this.drawButtonEl = document.createElement('button');
         this.drawButtonEl.id = 'drawButton';
@@ -187,7 +233,6 @@ export default function ViewHandler(facade, spritesLocation, viewportId, tableId
 
         // gif (when hovered over)
         let gifEl = document.createElement('img');
-        //gifEl.src = `${this.spritesLocation}/drawDeck_hover.gif`;
         gifEl.className = 'gif';
 
         this.drawButtonEl.onmouseenter = () => {
@@ -274,7 +319,7 @@ export default function ViewHandler(facade, spritesLocation, viewportId, tableId
         }
     }
 
-    ViewHandler.prototype.parentIsUser = function(parentId) {
-        return parentId == this.facade.getPlayerByIndex(0).id;
+    ViewHandler.prototype.isUser = function(id) {
+        return id == this.facade.getPlayerByIndex(0).id;
     }
 }

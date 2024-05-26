@@ -1,3 +1,4 @@
+import Card from './Card.js';
 import CardDeck from './CardDeck.js';
 
 export default function Player(id, name, typePC = false) {
@@ -27,12 +28,16 @@ Player.prototype.removeCard = function(cardId) {
     return this.deck.remove(index);
 }
 
+Player.prototype.getCardCount = function() {
+    return this.deck.getNumberOfCards();
+}
+
 Player.prototype.hasNoCard = function() {
     return this.deck.getNumberOfCards() == 0;
 }
 
 Player.prototype.hasUNO = function() {
-    return this.deck.numberOfCards == 1;
+    return this.deck.getNumberOfCards() == 1;
 }
 
 Player.prototype.isInTurn = function() {
@@ -51,4 +56,17 @@ Player.prototype.swapDeck = function(player) {
         player.deck.id = player.id;
         player.deck.name = `${player.id}'s card deck`;
     }
+}
+
+Player.prototype.canIncreaseDrawCounter = function(topCard) {
+    return  ( topCard.symbol == 'wild_draw_4' && this.canPutDraw4Card() ) ||
+            ( topCard.symbol == 'draw_2' && ( this.canPutDraw2Card() || this.canPutDraw4Card() ) );
+}
+
+Player.prototype.canPutDraw2Card = function() {
+    return this.deck.findCardBySymbol('draw_2') != -1;
+}
+
+Player.prototype.canPutDraw4Card = function() {
+    return this.deck.findCardBySymbol('wild_draw_4') != -1;
 }

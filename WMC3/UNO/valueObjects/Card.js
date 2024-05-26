@@ -99,13 +99,5 @@ Card.prototype.resetChosenColor = function() {
 }
 
 Card.prototype.equals = function(card) {
-
-    // only check color or symbol
-    if(card.color == '*' && card.symbol == '*')
-        return false;
-    else if( (card.color == '*' && this.symbol == card.symbol) || ((this.color == card.color && card.symbol == '*')) )
-        return true;
-
-    // check both 
     return this.color == card.color && this.symbol == card.symbol;
 }

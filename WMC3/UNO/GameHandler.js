@@ -2,13 +2,16 @@ import Card from './valueObjects/Card.js';
 import CardDeck from './valueObjects/CardDeck.js';
 import {errorMessage, inArray, getRandomInt} from './help.js';
 
-export default function GameHandler(facade) {
+export default function GameHandler(facade, settings) {
     this.type = 'ACTION_LISTENER';
     
     this.facade = facade;
+    this.settings = settings;
+
     this.drawCount = 0;
     this.gameStopped = false;
     this.playerInTurn = null;
+    this.previousCardWasDrawCard = false;
 }
 
 GameHandler.prototype.setCallbackRender = function(callback) {
@@ -21,6 +24,10 @@ GameHandler.prototype.setCallbackCardPlacement = function(callback) {
 
 GameHandler.prototype.setCallbackWild = function(callback) {
     this.wildCallback = callback;
+}
+
+GameHandler.prototype.setCallbackGameWon = function(callback) {
+    this.gameWonCallback = callback;
 }
 
 GameHandler.prototype.startGame = function(...players) {
@@ -124,7 +131,6 @@ function printCards(cardList) { // for console testing
 
     console.log(message);
 }
-
 GameHandler.prototype.assignDecks = function(cardDeck) {
     let cardList = [];
     let playerList = this.facade.getPlayerList();
@@ -167,7 +173,7 @@ GameHandler.prototype.determineEnd = function() {
         if(player.hasNoCard()) {
             
             player.stateWon = true; // for history entry (to see who won)
-            alert(`${player.name} has won!`);
+            this.gameWonCallback(player);
         
             for(let player of this.facade.getPlayerList()) {
                 player.stateInTurn = false;
@@ -232,6 +238,11 @@ GameHandler.prototype.assign = function(player) {
 
 GameHandler.prototype.assignDraw = function(player) {
     if(this.checkPlayer(player)) {
+
+        if(this.drawCount > 0) {
+            console.log(`[player (${player.name}) draws ${this.drawCount} cards]`);
+        }
+
         while(this.drawCount > 0) {
             this.assign(player);
             this.drawCount--;
@@ -299,12 +310,16 @@ GameHandler.prototype.moveTurn = function(currPlayer) {
     nextPlayer.stateInTurn = true;
     this.playerInTurn = nextPlayer;
     nextPlayer.optionalDrawPossible = true;
-    this.assignDraw(nextPlayer);
+
+    if(this.previousCardWasDrawCard == false || !nextPlayer.canIncreaseDrawCounter(this.facade.getTopCard())) {
+        this.assignDraw(nextPlayer);
+    }
 
     // start Computer AI if he's in turn
-    if(nextPlayer.type == 'COMPUTER_PLAYER')
+    if(nextPlayer.type == 'COMPUTER_PLAYER') {
         this.computerStart(nextPlayer);
-
+    }
+    
     this.renderCallback();
 }
 
@@ -344,7 +359,6 @@ GameHandler.prototype.validCard = function(placedCard) {
 
 GameHandler.prototype.turnPossible = function(player) {
     if(this.checkPlayer(player)) {
-        //console.log(`draw: ${player.optionalDrawPossible}\nrecommendation: ${this.recommendCard(player)} - RETURN ${player.optionalDrawPossible || this.recommendCard(player) != null}`);
         return player.optionalDrawPossible || this.recommendCard(player) != null;
     }
     return false;
@@ -358,26 +372,46 @@ GameHandler.prototype.recommendCard = function(player) {
 }
 
 GameHandler.prototype.checkSpecialCard = function(card, currPlayerId) {
+    let currPlayer = this.facade.getPlayer(currPlayerId);
+    
     // create a functionObject/Array
     let specialCards = {};
-    specialCards['draw_2'] = () => this.increaseDrawCount(2);
+    specialCards['draw_2'] = () => this.increaseDrawCount(2)
     specialCards['reverse'] = () => this.reverseDirection(currPlayerId);
     specialCards['skip'] = () => this.skipNextPlayer(currPlayerId);
 
     specialCards['wild'] = () => this.wild(currPlayerId);
-    specialCards['wild_draw_4'] = () => { this.wild(currPlayerId); this.increaseDrawCount(4); };
+    specialCards['wild_draw_4'] = () => { this.wild(currPlayerId); this.increaseDrawCount(4);}
     specialCards['wild_forced_swap'] = () => { this.forceASwap(currPlayerId); this.wild(currPlayerId);}
 
     if(inArray(card.symbol, ['draw_2', 'reverse', 'skip', 'wild', 'wild_draw_4', 'wild_forced_swap'])) {
         specialCards[card.symbol]();
     }
+
+    if(inArray(card.symbol, ['draw_2', 'wild_draw_4'])) {
+        if(this.settings.drawCardIncreasesValue)
+            this.previousCardWasDrawCard = true;
+    
+    } else if(this.previousCardWasDrawCard) {
+        this.assignDraw(currPlayer);
+        this.previousCardWasDrawCard = false;
+
+        if(currPlayer.type == 'COMPUTER_PLAYER') {
+            this.computerStart(currPlayer);
+        }
+
+    } else {
+        this.previousCardWasDrawCard = false;
+    }
 }
 
 GameHandler.prototype.increaseDrawCount = function(number) {
-    if(number == 2 || number == 4)
+    if(number == 2 || number == 4) {
         this.drawCount += number;
-    else
+        console.log(`[increased drawCounter by ${number}]`);
+    } else {
         errorMessage(`${number} is an invalid draw count (only 2 or 4)!`);
+    }
 }
 
 GameHandler.prototype.reverseDirection = function(currPlayerId) {
@@ -391,36 +425,7 @@ GameHandler.prototype.skipNextPlayer = function(currPlayerId) {
     let nextPlayer = this.getNextPlayer(currPlayerId, false);
     nextPlayer.stateSkipped = true;
 }
-/*
-GameHandler.prototype.wild = function(playerId) {
-    let player = this.facade.getPlayer(playerId);
-    let color;
 
-    // swap cards before asking color
-    this.renderCallback();
-
-    // because of the renderCallback a setTimeout() is needed
-    setTimeout(() => {
-        if(player.type == 'PLAYER') {
-
-            //for now with an alert
-            do {
-                color = prompt('Select color: ');
-            } while(inArray(color, ['red', 'blue', 'green', 'yellow']) == false);
-    
-        } else {
-            color = this.computerChooseColor(player);
-        }
-
-        this.facade.getTopCard().setChosenColor(color);
-
-        // to show the color of the top card
-        this.renderCallback();
-
-        return color;
-    }, 0);
-}
-*/
 GameHandler.prototype.wild = function(playerId) {
     let player = this.facade.getPlayer(playerId);
     let color;
@@ -430,12 +435,9 @@ GameHandler.prototype.wild = function(playerId) {
     
     if(this.facade.getPlayerIndex(playerId) == 0) { // player is user
         this.wildCallback();
-
-        // wait for user to select color
-        //while( inArray(this.facade.getTopCard().getChosenColor(), ['red', 'blue', 'green', 'yellow']) == false );
         
     } else {
-        color = this.computerChooseColor(player);
+        color = player.deck.getMostFrequentColor();
         this.facade.getTopCard().setChosenColor(color);
 
         // to show the color of the top card
@@ -467,9 +469,9 @@ GameHandler.prototype.computerStart = function(computerPlayer) {
     }, getRandomInt(1500, 2500));
 }
 
-GameHandler.prototype.computerChooseCard = function(computerPlayer, difficulty = 1) {
+GameHandler.prototype.computerChooseCard = function(computerPlayer) {
     let topCard = this.facade.getTopCard();
-    let drawnCard;
+    let nextPlayer = this.getNextPlayer(computerPlayer.id);
 
     let wildCards = [
         new Card(0, 'black', 'wild'),
@@ -483,12 +485,44 @@ GameHandler.prototype.computerChooseCard = function(computerPlayer, difficulty =
         new Card(0, topCard.color, 'skip')
     ];
 
-    switch(difficulty) {
+    switch(this.settings.difficulty) {
         case 1:
+            // just pick a random card
+            this.computerPlaceRandomCard(computerPlayer);
+            break;
+
+        case 2:
+            // prioritise draw_2 / wild_draw_4 cards if one was placed or the opponent has just one card left
+            let idxDraw2 = computerPlayer.deck.findCardBySymbol('draw_2');
+            let idxDraw4 = computerPlayer.deck.findCardBySymbol('wild_draw_4');
+            let idxForcedSwap = computerPlayer.deck.findCardBySymbol('wild_forced_swap');
+
+            if(topCard.symbol == 'draw_2' || nextPlayer.hasUNO()) {
+
+                // ... or the opponent has just one card left
+                if(nextPlayer.hasUNO()) {
+                    idxDraw2 = computerPlayer.deck.findCard(new Card(0, topCard.color, 'draw_2'));
+
+                    if(idxForcedSwap != -1)
+                        this.cardPlacementCallback(computerPlayer.deck.cardList[idxForcedSwap].id);
+                }
+
+                if(idxDraw2 != -1)
+                    this.cardPlacementCallback(computerPlayer.deck.cardList[idxDraw2].id);
+                else if(idxDraw4 != -1)
+                    this.cardPlacementCallback(computerPlayer.deck.cardList[idxDraw4].id);
+
+            } else if(topCard.symbol == 'wild_draw_4' && idxDraw4 != -1) {
+                    this.cardPlacementCallback(computerPlayer.deck.cardList[idxDraw4].id);
             
-            if(this.computerPlaceRandomCard(computerPlayer) == false) {
-                drawnCard = this.optionalDraw(computerPlayer);
-                this.cardPlacementCallback(drawnCard.id);
+            // (DONE JUST TEST MAYBE) try forcing a swap if the opponent has significantly less cards
+            } else if(computerPlayer.getCardCount() >= 7 && nextPlayer.getCardCount() == computerPlayer.getCardCount() - 5) {
+                if(idxForcedSwap != -1)
+                    this.cardPlacementCallback(computerPlayer.deck.cardList[idxForcedSwap].id);
+
+                // just pick a random card
+            } else {
+                this.computerPlaceRandomCard(computerPlayer);
             }
             break;
 
@@ -507,43 +541,30 @@ GameHandler.prototype.computerChooseCard = function(computerPlayer, difficulty =
 }
 
 GameHandler.prototype.computerPlaceRandomCard = function(computerPlayer) {
+    let drawnCard;
+    
     for(let card of computerPlayer.deck.getAllCards()) {
         if(this.validCard(card)) {
             this.cardPlacementCallback(card.id);
-            return true;
+            return;
         }
     }
+    
     console.log("[PC doesn't have any cards - picking a card from the table...]");
-    return false;
+    drawnCard = this.optionalDraw(computerPlayer);
+    this.cardPlacementCallback(drawnCard.id);
 }
 
-GameHandler.prototype.computerChooseColor = function(computerPlayer) {
-    let colorNames = ['red', 'blue', 'green', 'yellow'];
-    let colorCount = {
-        red: 0,
-        blue: 0,
-        green: 0,
-        yellow: 0,
-        black: 0
-    };
+// ------------------------------------------ Testing ------------------------------------------
 
-    for(let card of computerPlayer.deck.getAllCards()) {
-        colorCount[card.color]++;
-    }
-
-    if(colorCount.red == 0 && colorCount.blue == 0 && colorCount.green == 0 && colorCount.yellow == 0) {
-        return colorNames[getRandomInt(0, 3)];
+GameHandler.prototype.assignTestDecks = function(deck1, deck2, topCard) {
     
-    } else {
-        let maxCount = 0;
-        let maxColor = 'red';
+    let tableDeck = new CardDeck('tableDeck', 'tDeck');
+    let playerList = this.facade.getPlayerList();
 
-        for(let key in colorCount) {
-            if(colorCount[key] > maxCount) {
-                maxCount = colorCount[key];
-                maxColor = key;
-            }
-        }
-        return maxColor;
-    }
+    playerList[0].deck.cardList = deck1.cardList;
+    playerList[1].deck.cardList = deck2.cardList;
+
+    tableDeck.add(topCard);
+    this.facade.tableDeck = tableDeck;
 }
