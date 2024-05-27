@@ -4,7 +4,7 @@ import CardDeck from './valueObjects/CardDeck.js';
 import Card from './valueObjects/Card.js';
 
 function start() {
-    let viewHandler = new ViewHandler(new Facade(), 'sprites', 'viewport', 'table', 'decks');
+    let viewHandler = new ViewHandler(new Facade('http://127.0.0.1:3000'), 'sprites', 'viewport', 'table', 'decks');
 
     viewHandler.startGame();
     //startTest(viewHandler);

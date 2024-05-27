@@ -1,12 +1,14 @@
 import CardDeck from './valueObjects/CardDeck.js';
 import GameSettings from './valueObjects/GameSettings.js';
+import UnoDao from './UnoDao.js';
 import {errorMessage} from './help.js';
 
-export default function Facade() {
-    this.settings = new GameSettings();
+export default function Facade(baseurl) {
     this.playerList = [];
     this.tableDeck = new CardDeck('tableDeck', 'tDeck');
     this.availableCardsDeck = new CardDeck('availableCardsDeck', 'aDeck');
+    this.settings = new GameSettings();
+    this.unoDao = new UnoDao();
 }
 
 Facade.prototype.addPlayer = function(player) {
@@ -96,4 +98,56 @@ Facade.prototype.getCardById = function(id) {
 
     errorMessage(`Could not find card with id ${id} (in any deck)!`);
     return null;
+}
+
+// -------------------------------------------- AJAX -------------------------------------------
+
+Facade.prototype.loadViewport = function(renderCallback) {
+    this.unoDao.loadObjects('players', (playerList) => {
+        this.playerList = [];
+        
+        for(let player of playerList)
+            this.addPlayer(player);
+    });
+
+    this.unoDao.loadObjects('decks', (deckList) => {
+        this.tableDeck = [];
+        this.availableCardsDeck = [];
+
+        for(let deck of deckList) {
+            if(deck.id == 'tDeck')
+                this.tableDeck = deck;
+            if(deck.id == 'aDeck')
+                this.availableCardsDeck = deck;
+        }
+    });
+
+    renderCallback();
+}
+
+Facade.prototype.writePlayer = function(player, callback) {
+    this.unoDao.addObject('players', player);
+    callback();
+}
+
+Facade.prototype.writeDeck = function(deck, callback) {
+    this.unoDao.addObject('decks', deck);
+    callback();   
+}
+
+/* should I even be able to delete players or decks ? */
+Facade.prototype.deletePlayer = function(playerId, callback) {
+}
+
+Facade.prototype.deleteDeck = function(deckId, callback) {
+}
+
+
+Facade.prototype.loadHistoryEntries = function(callback) {
+}
+
+Facade.prototype.addHistoryEntry = function(entry, callback) {
+}
+
+Facade.prototype.deleteHistoryEntry = function(entryId, callback) {
 }

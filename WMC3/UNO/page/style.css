@@ -53,7 +53,9 @@
     overflow-x: auto;
 }
 
-#cardCounter, #pcAvatar {
+/* AVATARRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR*/
+
+#cardCounter, #avatarContainer {
     display: flex;
     justify-content: center;
 }
@@ -78,6 +80,14 @@
 
 #pcAvatar img {
     height: 15em;
+}
+
+#avatarContainer {
+    height: 240px;
+}
+
+#avatarContainer > img {
+    position: absolute;
 }
 
 /* Hide scrollbar (for multiple browsers) */

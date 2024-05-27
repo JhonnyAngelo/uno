@@ -7,13 +7,12 @@ export default function ViewHandler(facade, spritesLocation, viewportId, tableId
     
     this.gameHandler = new GameHandler(facade, new GameSettings(true, true, 1));
     this.facade = facade;
+    
     this.spritesLocation = spritesLocation;
-
     this.viewport = document.getElementById(viewportId);
     this.tableContainer = document.getElementById(tableId);
     this.deckContainer = document.getElementById(deckId);
     this.drawButtonEl = null;
-
     this.wildWindowActive = false;
 
     this.startGame = function() {
@@ -33,10 +32,17 @@ export default function ViewHandler(facade, spritesLocation, viewportId, tableId
         this.gameHandler.setCallbackCardPlacement((cardId) => this.animateCardPlacement(cardId));
         this.gameHandler.setCallbackWild(() => this.selectColor());
         this.gameHandler.setCallbackGameWon((player) => alert(`${player.name} has won!`));
+
+        // avatar
+        this.gameHandler.setCallbackAvatarStateIdle(() => document.getElementById('avatar').src = `${this.spritesLocation}/pc/pc_idle.gif`);
+        this.gameHandler.setCallbackAvatarStateThinking(() => document.getElementById('avatar').src = `${this.spritesLocation}/pc/pc_thinking.gif`);
+        this.gameHandler.setCallbackAvatarStateWon(() => document.getElementById('avatar').src = `${this.spritesLocation}/pc/pc_won.png`);
     }
 
     this.clearViewport = function() {
         let windowElements = document.querySelectorAll('.window');
+        
+        this.clearPcAvatar();
 
         this.tableContainer.innerHTML = '';
         this.deckContainer.innerHTML = '';
@@ -46,21 +52,29 @@ export default function ViewHandler(facade, spritesLocation, viewportId, tableId
         }
     }
 
+    ViewHandler.prototype.clearPcAvatar = function() {
+        let cardCounter = document.getElementById('cardCounter');
+        let avatarCards = document.getElementById('avatarCards');
+
+        cardCounter.innerHTML = '';
+        if(avatarCards) // if avatarCards == null then this is the initial render
+            avatarCards.remove();
+        else
+            this.renderPcAvatar();
+    }
+
     this.renderAll = function() {
 
         console.log('[rendering viewport]');
 
         this.clearViewport();
-
         this.deckContainer.append(this.tableContainer);
 
         this.createAndBindAll();
 
         this.renderDeck(this.facade.getPlayer('p2').deck);
-
         this.renderDeck(this.facade.getAvailableCardsDeck(), false);
         this.renderDeck(this.facade.getTableDeck(), false, true);
-
         this.renderDeck(this.facade.getPlayer('p1').deck);
     }
 
@@ -114,45 +128,51 @@ export default function ViewHandler(facade, spritesLocation, viewportId, tableId
 
             // render PC avatar
 
-            if(playerDeck && this.facade.getPlayer(cardDeck.id).type == 'COMPUTER_PLAYER') {
-                
-                let pcEl = document.createElement('div');
-                pcEl.id = 'pc';
-                this.deckContainer.prepend(pcEl);
-
-                let cardCounter = document.createElement('div');
-                cardCounter.id = 'cardCounter';
-                cardCounter.innerHTML = `<div class="circle"><p>${cardDeck.getNumberOfCards()}</p></div>`;
-                pcEl.append(cardCounter);
-
-                let pEl = document.querySelector('#cardCounter > div');
-                if(cardDeck.getNumberOfCards() == 1) {
-                    pEl.style.backgroundColor = 'red';
-                } else {
-                    pEl.style.backgroundColor = 'darkturquoise';
-                }
-
-                let pcAvatar = document.createElement('div');
-                pcAvatar.id = 'pcAvatar';
-                pcEl.append(pcAvatar);
-
-                let pcImg = document.createElement('img');
-                pcImg.alt = 'pc avatar';
-                pcAvatar.append(pcImg);
-                
-                if(cardDeck.getNumberOfCards() <= 9) {
-                    pcImg.src = `sprites/pc/pc_body_proto_${cardDeck.getNumberOfCards()}.png`;
-                } else {
-                    pcImg.src = 'sprites/pc/pc_body_proto_9.png';
-                }
-            }
+            if(playerDeck && this.facade.getPlayer(cardDeck.id).type == 'COMPUTER_PLAYER')
+                this.renderAvatarCards(cardDeck);
         
         } else {
             errorMessage('Invalid deck passed to renderDeck()!');
         }
     }
 
-    this.getCardImg = function(card) {
+    ViewHandler.prototype.renderPcAvatar = function() {
+        let avatarContainer = document.getElementById('avatarContainer');
+        let avatar = document.createElement('img');
+
+        avatar.id = 'avatar';
+        avatar.alt = 'avatar';
+        avatar.src = `${this.spritesLocation}/pc/pc_idle.gif`;
+        avatarContainer.prepend(avatar);
+    }
+
+    ViewHandler.prototype.renderAvatarCards = function(deck) {
+
+        let cardCounter = document.getElementById('cardCounter');
+        let counter;
+        let avatarContainer = document.getElementById('avatarContainer');
+        
+        cardCounter.innerHTML = `<div class="circle"><p><strong>${deck.getNumberOfCards()}</strong></p></div>`;
+        counter = document.querySelector('#cardCounter > div');
+        if(deck.getNumberOfCards() == 1) {
+            counter.style.backgroundColor = 'red';
+        } else {
+            counter.style.backgroundColor = 'darkturquoise';
+        }
+
+        let avatarCards = document.createElement('img');
+        avatarCards.id = 'avatarCards';
+        avatarCards.alt = "avatar's cards";
+        avatarContainer.append(avatarCards);
+
+        if(deck.getNumberOfCards() <= 18) {
+            avatarCards.src = `${this.spritesLocation}/pc/avatarCards_${deck.getNumberOfCards()}.png`;
+        } else {
+            avatarCards.src = `${this.spritesLocation}/pc/avatarCards_18.png`;
+        }
+    }
+
+    ViewHandler.prototype.getCardImg = function(card) {
 
         if(card.valid) {
             let imgEl = document.createElement('img');

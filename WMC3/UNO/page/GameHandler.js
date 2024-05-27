@@ -14,21 +14,19 @@ export default function GameHandler(facade, settings) {
     this.previousCardWasDrawCard = false;
 }
 
-GameHandler.prototype.setCallbackRender = function(callback) {
-    this.renderCallback = callback;
-}
+GameHandler.prototype.setCallbackRender = function(callback) { this.renderCallback = callback; }
 
-GameHandler.prototype.setCallbackCardPlacement = function(callback) {
-    this.cardPlacementCallback = callback;
-}
+GameHandler.prototype.setCallbackCardPlacement = function(callback) { this.cardPlacementCallback = callback; }
 
-GameHandler.prototype.setCallbackWild = function(callback) {
-    this.wildCallback = callback;
-}
+GameHandler.prototype.setCallbackWild = function(callback) { this.wildCallback = callback; }
 
-GameHandler.prototype.setCallbackGameWon = function(callback) {
-    this.gameWonCallback = callback;
-}
+GameHandler.prototype.setCallbackGameWon = function(callback) { this.gameWonCallback = callback; }
+
+GameHandler.prototype.setCallbackAvatarStateIdle = function(callback) { this.avatarIdleCallback = callback; }
+
+GameHandler.prototype.setCallbackAvatarStateThinking = function(callback) { this.avatarThinkingCallback = callback; }
+
+GameHandler.prototype.setCallbackAvatarStateWon = function(callback) { this.avatarWonCallback = callback; }
 
 GameHandler.prototype.startGame = function(...players) {
 
@@ -172,6 +170,9 @@ GameHandler.prototype.determineEnd = function() {
     for(let player of this.facade.getPlayerList()) {
         if(player.hasNoCard()) {
             
+            if(player.type == 'COMPUTER_PLAYER')
+                this.avatarWonCallback();
+
             player.stateWon = true; // for history entry (to see who won)
             this.gameWonCallback(player);
         
@@ -461,12 +462,12 @@ GameHandler.prototype.forceASwap = function(currPlayerId) {
 // ---------------------------------------- Computer AI ----------------------------------------
 
 GameHandler.prototype.computerStart = function(computerPlayer) {
+    this.avatarThinkingCallback();
     
-    console.log(`[player (${computerPlayer.name}) is thinking...]`);
-
     setTimeout(() => {
+        // change img so that pc avatar is looking down
         this.computerChooseCard(computerPlayer);
-    }, getRandomInt(1500, 2500));
+    }, getRandomInt(500, 1500));
 }
 
 GameHandler.prototype.computerChooseCard = function(computerPlayer) {
@@ -524,11 +525,14 @@ GameHandler.prototype.computerChooseCard = function(computerPlayer) {
             } else {
                 this.computerPlaceRandomCard(computerPlayer);
             }
+
             break;
 
         default:
             errorMessage(`Difficulty level ${difficulty} does not exist!`);
     }
+
+    setTimeout(this.avatarIdleCallback(), 5000);
 
     // (0. Place draw_2 if in the previous turn one has been put - same for wild_draw_4)
     // 1. Place wild_draw_4 or draw_2 if the next player has UNO
@@ -552,7 +556,8 @@ GameHandler.prototype.computerPlaceRandomCard = function(computerPlayer) {
     
     console.log("[PC doesn't have any cards - picking a card from the table...]");
     drawnCard = this.optionalDraw(computerPlayer);
-    this.cardPlacementCallback(drawnCard.id);
+    if(drawnCard)
+        this.cardPlacementCallback(drawnCard.id);
 }
 
 // ------------------------------------------ Testing ------------------------------------------

@@ -4,14 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>UNO</title>
-    <script type="module" src="UNO.js"></script>
     <link rel="stylesheet" type="text/css" href="style.css">
     <link rel="stylesheet" type="text/css" href="transitions.css">
+    <script type="module" src="UNO.js"></script>
 </head>
 <body>
     <!-- viewport modes: usermode/devmode -->
     <div id="viewport" class="usermode">
-        <!-- <img id="pcAvatar" src="sprites/pc/pc_body_proto_1.png"> -->
+        <div id="pcAvatar">
+            <div id="cardCounter"></div>
+            <div id="avatarContainer"></div>
+        </div>
         <div id="decks">
             <div id="table">
                 <button id="drawButton" type="button"></button>
