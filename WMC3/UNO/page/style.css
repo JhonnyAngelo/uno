@@ -53,7 +53,12 @@
     overflow-x: auto;
 }
 
-/* AVATARRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR*/
+.card {
+    height: 150px;
+    /* width: 90px; */
+}
+
+/* -------------- avatar ------------- */
 
 #cardCounter, #avatarContainer {
     display: flex;
@@ -90,17 +95,6 @@
     position: absolute;
 }
 
-/* Hide scrollbar (for multiple browsers) */
-/*
-.user .deckContainer {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-}
-
-.user .deckContainer::-webkit-scrollbar {
-    display: none;
-}
-*/
 /* -------- card draw button -------- */
 
 #drawButton {
@@ -188,4 +182,81 @@
     height: 26.7%;
     top: 51.7%;
     left: 11%;
+}
+
+/* ------------- history ------------- */
+
+#actionsHistory {
+    position: fixed;
+    top: 25px;
+    right: 75px;
+
+    height: 292px;
+    width: 144px;
+}
+
+#historyBackground, #historyBtn, .entryBackground {
+    position: absolute;
+}
+
+#actionsHistory.closed #entryList {
+    display: none;
+}
+
+#historyBtn {
+    height: 56px;
+    left: 44px;
+}
+
+#historyBackground {
+    height: 292px;
+}
+
+#entryList {
+    position: absolute;
+    top: 77px;
+    margin-left: 12px;
+
+    max-height: 190px;
+    overflow-y: auto;
+}
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+#entryList::-webkit-scrollbar {
+  display: none;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+#entryList {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+.entry {
+    margin-bottom: 6px;
+    color: black;
+}
+
+.entry, .entryBackground {
+    width: 120px;
+    height: 48px;
+}
+
+.entryText {
+    position: relative;
+    top: 4px;
+    right: 4px;
+    
+    display: flex;
+    justify-content: right;
+    align-items: center;
+}
+
+.entryText span {
+    margin-right: 3px;
+}
+
+.entryText img.card {
+    position: static;
+    height: 40px;
 }

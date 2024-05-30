@@ -242,6 +242,7 @@ GameHandler.prototype.assignDraw = function(player) {
 
         if(this.drawCount > 0) {
             console.log(`[player (${player.name}) draws ${this.drawCount} cards]`);
+            this.facade.history.addActionCardDraw(player, this.drawCount);
         }
 
         while(this.drawCount > 0) {
@@ -375,6 +376,9 @@ GameHandler.prototype.recommendCard = function(player) {
 GameHandler.prototype.checkSpecialCard = function(card, currPlayerId) {
     let currPlayer = this.facade.getPlayer(currPlayerId);
     
+    if(currPlayer.stateWon)
+        return;
+
     // create a functionObject/Array
     let specialCards = {};
     specialCards['draw_2'] = () => this.increaseDrawCount(2)
@@ -474,18 +478,6 @@ GameHandler.prototype.computerChooseCard = function(computerPlayer) {
     let topCard = this.facade.getTopCard();
     let nextPlayer = this.getNextPlayer(computerPlayer.id);
 
-    let wildCards = [
-        new Card(0, 'black', 'wild'),
-        new Card(0, 'black', 'wild_draw_4'),
-        new Card(0, 'black', 'wild_forced_swap')
-    ];
-    
-    let specialCards = [
-        new Card(0, topCard.color, 'draw_2'),
-        new Card(0, topCard.color, 'reverse'),
-        new Card(0, topCard.color, 'skip')
-    ];
-
     switch(this.settings.difficulty) {
         case 1:
             // just pick a random card
@@ -532,7 +524,7 @@ GameHandler.prototype.computerChooseCard = function(computerPlayer) {
             errorMessage(`Difficulty level ${difficulty} does not exist!`);
     }
 
-    setTimeout(this.avatarIdleCallback(), 5000);
+    setTimeout(this.avatarIdleCallback(), 0);
 
     // (0. Place draw_2 if in the previous turn one has been put - same for wild_draw_4)
     // 1. Place wild_draw_4 or draw_2 if the next player has UNO

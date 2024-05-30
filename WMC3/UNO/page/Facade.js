@@ -1,6 +1,7 @@
 import CardDeck from './valueObjects/CardDeck.js';
 import GameSettings from './valueObjects/GameSettings.js';
 import UnoDao from './UnoDao.js';
+import History from './History.js';
 import {errorMessage} from './help.js';
 
 export default function Facade(baseurl) {
@@ -8,7 +9,8 @@ export default function Facade(baseurl) {
     this.tableDeck = new CardDeck('tableDeck', 'tDeck');
     this.availableCardsDeck = new CardDeck('availableCardsDeck', 'aDeck');
     this.settings = new GameSettings();
-    this.unoDao = new UnoDao();
+    this.unoDao = new UnoDao(baseurl);
+    this.history = new History();
 }
 
 Facade.prototype.addPlayer = function(player) {
@@ -23,6 +25,7 @@ Facade.prototype.removePlayerCard = function(playerId, cardId) {
     let player = this.getPlayer(playerId);
 
     console.log(`[player (${player.name}) made a turn]`);
+    this.history.addActionCardPlacement(player, player.deck.getCard(cardId));
 
     return player.removeCard(cardId);
 }
@@ -100,6 +103,18 @@ Facade.prototype.getCardById = function(id) {
     return null;
 }
 
+Facade.prototype.getActionEntry = function(index) {
+    return this.history.getAction(index);
+}
+
+Facade.prototype.getAllActionEntries = function() {
+    return this.history.getAllActions();
+}
+
+Facade.prototype.getEntryMessage = function(entry) {
+    return this.history.getEntryMessage(entry);
+}
+
 // -------------------------------------------- AJAX -------------------------------------------
 
 Facade.prototype.loadViewport = function(renderCallback) {
@@ -143,11 +158,11 @@ Facade.prototype.deleteDeck = function(deckId, callback) {
 }
 
 
-Facade.prototype.loadHistoryEntries = function(callback) {
+Facade.prototype.loadHistory = function(callback) {
 }
 
-Facade.prototype.addHistoryEntry = function(entry, callback) {
+Facade.prototype.updateHistory = function(callback) {
 }
 
-Facade.prototype.deleteHistoryEntry = function(entryId, callback) {
+Facade.prototype.clearHistory = function(entryId, callback) {
 }

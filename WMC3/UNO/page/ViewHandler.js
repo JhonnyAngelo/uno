@@ -41,18 +41,21 @@ export default function ViewHandler(facade, spritesLocation, viewportId, tableId
 
     this.clearViewport = function() {
         let windowElements = document.querySelectorAll('.window');
-        
-        this.clearPcAvatar();
+        let historyEntryListEl = document.getElementById('entryList');
+
+        this.clearPcAvatarContainer();
 
         this.tableContainer.innerHTML = '';
         this.deckContainer.innerHTML = '';
+
+        historyEntryListEl.innerHTML = '';
 
         for(let windowEl of windowElements) {
             windowEl.remove();
         }
     }
 
-    ViewHandler.prototype.clearPcAvatar = function() {
+    ViewHandler.prototype.clearPcAvatarContainer = function() {
         let cardCounter = document.getElementById('cardCounter');
         let avatarCards = document.getElementById('avatarCards');
 
@@ -76,6 +79,8 @@ export default function ViewHandler(facade, spritesLocation, viewportId, tableId
         this.renderDeck(this.facade.getAvailableCardsDeck(), false);
         this.renderDeck(this.facade.getTableDeck(), false, true);
         this.renderDeck(this.facade.getPlayer('p1').deck);
+
+        this.renderHistory();
     }
 
     this.renderDeck = function(cardDeck, playerDeck = true, topCardOnly = false) {
@@ -172,6 +177,66 @@ export default function ViewHandler(facade, spritesLocation, viewportId, tableId
         }
     }
 
+    ViewHandler.prototype.renderHistory = function() {
+        let buttonImg = document.getElementById('historyBtn');
+        let historyContainer = document.getElementById('actionsHistory');
+        let backgroundImg = document.getElementById('historyBackground');
+        let entryListEl = document.getElementById('entryList');
+
+        if(!buttonImg.src) {
+            buttonImg.src = `${this.spritesLocation}/historyBtn.png`;
+            backgroundImg.src = `${this.spritesLocation}/history_closed.png`;
+
+            buttonImg.onclick = () => {
+                
+                historyContainer.classList.toggle('closed');
+                
+                if(historyContainer.classList.contains('closed'))
+                    backgroundImg.src = `${this.spritesLocation}/history_closed.png`;
+                else
+                    backgroundImg.src = `${this.spritesLocation}/history.png`;
+            }
+        }
+
+        for(let entry of this.facade.getAllActionEntries()) {
+            let entryEl = document.createElement('div');
+            entryEl.className = 'entry';
+
+            let entryText = document.createElement('div');
+            entryText.className = 'entryText';
+
+            entryEl.innerHTML = `<img class="entryBackground" alt="action" src="${this.spritesLocation}/history_entry.png">`;
+
+            switch(entry.type) {
+                
+                case 'action-place':
+                    entryText.innerHTML = `<span><strong>${entry.player.name}:</strong> </span>`;
+                    entryText.append(this.getCardImg(entry.card));
+
+                    console.log('{made action-place entry}');
+                    entryEl.append(entryText);
+                    entryListEl.prepend(entryEl);
+                    break;
+
+                case 'action-draw':
+                    entryText.innerHTML = `<span><strong>${entry.player.name}:</strong> +${entry.amount}</span>`;
+                    
+                    console.log('{made action-draw entry}');
+                    entryEl.append(entryText);
+                    entryListEl.prepend(entryEl);
+
+                    break;
+            }
+        }
+
+        let endSpacing = document.createElement('div');
+        endSpacing.className = 'entry';
+        entryListEl.append(endSpacing);
+    }
+
+    ViewHandler.prototype.renderHistoryEntry = function() {
+    }
+
     ViewHandler.prototype.getCardImg = function(card) {
 
         if(card.valid) {
@@ -189,10 +254,7 @@ export default function ViewHandler(facade, spritesLocation, viewportId, tableId
             } else {
                 imgEl.src += `w_${card.symbol}_${card.getChosenColor()[0]}.png`;
             }
-
-            imgEl.width = '90';
-            imgEl.height = '150';
-
+            
             imgEl.onclick = () => {
 
                 let parentId = imgEl.parentNode.playerId;
@@ -203,7 +265,7 @@ export default function ViewHandler(facade, spritesLocation, viewportId, tableId
                     this.animateCardPlacement(imgEl.id);
                 
                 } else if(player) {
-                    errorMessage("You're not in turn!");
+                    errorMessage(`You're not in turn, ${player.name}!`);
                 }
             }
 
