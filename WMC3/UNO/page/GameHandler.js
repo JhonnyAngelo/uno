@@ -28,6 +28,10 @@ GameHandler.prototype.setCallbackAvatarStateThinking = function(callback) { this
 
 GameHandler.prototype.setCallbackAvatarStateWon = function(callback) { this.avatarWonCallback = callback; }
 
+GameHandler.prototype.setCallBackReminder = function(callback) { this.reminderCallback = callback; }
+
+GameHandler.prototype.setCallbackShoutUNO = function(callback) { this.shoutUNOCallback = callback; }
+
 GameHandler.prototype.startGame = function(...players) {
 
     if(players.length >= 2) {
@@ -40,6 +44,7 @@ GameHandler.prototype.startGame = function(...players) {
         let user = this.facade.getPlayerByIndex(0);
         user.stateInTurn = true;
         this.playerInTurn = user;
+        this.countInactivity();
     
     } else {
         errorMessage('There must be at least 2 players!')
@@ -173,7 +178,10 @@ GameHandler.prototype.determineEnd = function() {
             if(player.type == 'COMPUTER_PLAYER')
                 this.avatarWonCallback();
 
+            // data saved in json file
             player.stateWon = true; // for history entry (to see who won)
+            player.gamesWon++;
+            
             this.gameWonCallback(player);
         
             for(let player of this.facade.getPlayerList()) {
@@ -186,25 +194,25 @@ GameHandler.prototype.determineEnd = function() {
     }
 }
 
-GameHandler.prototype.checkUNO = function() {
+GameHandler.prototype.checkUNO = function(player) {
 
-    // check if a player has only one card
-    for(let player of this.playerList) {
-        if(player.hasUNO()) {
-
-            // IMPORTANT:
-                // should the player shout UNO somehow (idk, maybe write it or press a button...)?
-                // OR: should the screen just shout UNO automatically?
-
-                // - CURRENT IDEA (from david)
-                //       you need to press a blinking button (when having only 1 card)
-                //       before the next player makes his turn
-                //       (for the PC there is a random timer between 2 & 3 seconds
-                //       meaning that the player can also catch the PC not saying UNO and make him draw 2 cards)
-
-                // RATHER: you need to press the button before placing your second-to-last card
+    if(player.hasUNO()) {
+        
+        if(player.stateShoutedUno == false) {
+            alert('PENALTY !!!');
+            this.assign(player);
+            this.assign(player);
+            
+        } else {
+            console.log(`[player (${player.name}) shouted: "UNO!"]`);
+            player.stateShoutedUno = false;
+            this.shoutUNOCallback();
         }
     }
+
+    // clear the stateShoutedUno for everyone
+    for(let player of this.facade.getPlayerList())
+        player.stateShoutedUno = false;
 }
 
 GameHandler.prototype.checkPlayer = function(player) {
@@ -274,12 +282,11 @@ GameHandler.prototype.optionalDraw = function(player) {
     return assignedCard;
 }
 
-GameHandler.prototype.makeTurn = async function(playerId, cardId) {
+GameHandler.prototype.makeTurn = function(playerId, cardId) {
     let player = this.facade.getPlayer(playerId);
     let card = player.deck.getCard(cardId);
 
     if(player.stateSkipped == false && this.validCard(card)) {
-        
         this.facade.getTopCard().resetChosenColor();
         this.facade.removePlayerCard(playerId, cardId);
         this.facade.tableDeck.add(card);
@@ -302,8 +309,14 @@ GameHandler.prototype.makeTurn = async function(playerId, cardId) {
 
 GameHandler.prototype.moveTurn = function(currPlayer) {
     
+    // hide reminder message for user
+    this.reminderCallback(true);
+
     if(this.gameStopped)
         return;
+
+    // before moving on check if player has shouted UNO!
+    this.checkUNO(currPlayer);
     
     currPlayer.stateInTurn = false;
     currPlayer.optionalDrawPossible = true;
@@ -320,6 +333,10 @@ GameHandler.prototype.moveTurn = function(currPlayer) {
     // start Computer AI if he's in turn
     if(nextPlayer.type == 'COMPUTER_PLAYER') {
         this.computerStart(nextPlayer);
+
+    // remind user that he's in turn
+    } else if(this.facade.playerIsUser(nextPlayer.id)) {
+        this.countInactivity();
     }
     
     this.renderCallback();
@@ -348,7 +365,22 @@ GameHandler.prototype.getNextPlayer = function(currPlayerId, considerStateSkippe
 
     return nextPlayer;
 }
+/*
+GameHandler.prototype.getPreviousPlayer = function(currPlayerId) {
+    let currIndex = this.facade.getPlayerIndex(currPlayerId);
+    let prevPlayer = null;
 
+    if(currIndex >= 0) {
+
+        if(currIndex == 0)
+            prevPlayer = this.facade.getPlayerByIndex(this.facade.getPlayerCount() - 1);
+        else
+            prevPlayer = this.facade.getPlayerByIndex(currIndex - 1);
+    }
+
+    return prevPlayer;
+}
+*/
 GameHandler.prototype.validCard = function(placedCard) {
     let topCard = this.facade.getTopCard();
 
@@ -401,8 +433,9 @@ GameHandler.prototype.checkSpecialCard = function(card, currPlayerId) {
         this.assignDraw(currPlayer);
         this.previousCardWasDrawCard = false;
 
-        if(currPlayer.type == 'COMPUTER_PLAYER') {
-            this.computerStart(currPlayer);
+        let nextPlayer = this.getNextPlayer(currPlayerId);
+        if(nextPlayer.type == 'COMPUTER_PLAYER') {
+            this.computerStart(nextPlayer);
         }
 
     } else {
@@ -438,7 +471,7 @@ GameHandler.prototype.wild = function(playerId) {
     // swap cards before asking color
     this.renderCallback();
     
-    if(this.facade.getPlayerIndex(playerId) == 0) { // player is user
+    if(this.facade.playerIsUser(playerId)) {
         this.wildCallback();
         
     } else {
@@ -463,9 +496,29 @@ GameHandler.prototype.forceASwap = function(currPlayerId) {
     }
 }
 
+GameHandler.prototype.countInactivity = function() {
+    let inactiveUserTime = 0;
+    
+    let increaseInactiveness = setInterval(() => {
+        
+        if(this.facade.getPlayerByIndex(0).stateInTurn == false)
+            clearInterval(increaseInactiveness);
+        
+        if(inactiveUserTime == 4) {
+            console.log("[You're in turn, user!]");
+            this.reminderCallback(false);
+            clearInterval(increaseInactiveness);
+        } else {
+            inactiveUserTime += 0.5;
+        }
+
+    }, 500);
+}
+
 // ---------------------------------------- Computer AI ----------------------------------------
 
 GameHandler.prototype.computerStart = function(computerPlayer) {
+    computerPlayer.stateShoutedUno = true;
     this.avatarThinkingCallback();
     
     setTimeout(() => {

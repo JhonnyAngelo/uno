@@ -1,6 +1,5 @@
-import Student from "./Student.js";
-import ObjectList from "./ObjectList.js";
-
+import Student from './Student.js';
+import ObjectList from './ObjectList.js';
 export default function ViewHandler() {
     this.studentList = new ObjectList();
     this.fnEl = document.getElementById('firstname');

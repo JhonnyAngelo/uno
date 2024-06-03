@@ -16,7 +16,9 @@ StudentDAO.prototype.loadStudents = function(callback) {
 StudentDAO.prototype.addStudent = function(student, callback) {
     let xhr = this.prepareRequest('POST', '/students');
 
-    xhr.responseType = 'json';
+    // weirdly, the only after adding 2 students are both really added ...
+    xhr.setRequestHeader("Content-type", "application/json");
+
     xhr.onload = function() {
         callback(xhr.response);
     }

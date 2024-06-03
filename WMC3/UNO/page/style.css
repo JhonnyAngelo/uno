@@ -1,5 +1,5 @@
 #viewport {
-    margin-top: 5em;
+    margin-top: 4em;
 }
 
 #viewport.devmode #aDeck {
@@ -16,6 +16,14 @@
 
 #viewport.devmode #table {
     margin-bottom: 15em;
+}
+
+#reminder {
+    position: relative;
+    top: -1.5em;
+    display: flex;
+    justify-content: center;
+    height: 24px;
 }
 
 /* -------------- decks ------------- */
@@ -46,16 +54,22 @@
     /*justify-content: center;*/
 
     padding: 1.5em;
-    padding-right: 3.5em;
+    padding-right: 3em;
+    margin-right: 11em;
 }
 
 .user .deckContainer {
     overflow-x: auto;
+    overflow-y: hidden;
 }
 
 .card {
     height: 150px;
     /* width: 90px; */
+}
+
+#tDeck .card {
+    height: 120px;
 }
 
 /* -------------- avatar ------------- */
@@ -186,10 +200,16 @@
 
 /* ------------- history ------------- */
 
+#buttonContainer {
+    position: absolute;
+    top: 25px;
+    right: 150px;
+}
+
 #actionsHistory {
     position: fixed;
     top: 25px;
-    right: 75px;
+    right: 106px;
 
     height: 292px;
     width: 144px;
@@ -259,4 +279,28 @@
 .entryText img.card {
     position: static;
     height: 40px;
+}
+
+#pauseBtn {
+    position: absolute;
+    height: 56px;
+    left: 44px;
+}
+
+#pauseScreen {
+    background-color: rgba(255, 255, 255, 0.5);
+    position: fixed;
+    top: 0;
+    height: 100%;
+    width: 100%;
+}
+
+#uno {
+    position: fixed;
+    right: 2em;
+    bottom: 4.5em;
+}
+
+#unoBtn {
+    height: 96px;
 }

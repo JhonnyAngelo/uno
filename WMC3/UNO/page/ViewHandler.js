@@ -37,6 +37,8 @@ export default function ViewHandler(facade, spritesLocation, viewportId, tableId
         this.gameHandler.setCallbackAvatarStateIdle(() => document.getElementById('avatar').src = `${this.spritesLocation}/pc/pc_idle.gif`);
         this.gameHandler.setCallbackAvatarStateThinking(() => document.getElementById('avatar').src = `${this.spritesLocation}/pc/pc_thinking.gif`);
         this.gameHandler.setCallbackAvatarStateWon(() => document.getElementById('avatar').src = `${this.spritesLocation}/pc/pc_won.png`);
+        this.gameHandler.setCallBackReminder((hide) => this.hide('reminderText', hide));
+        this.gameHandler.setCallbackShoutUNO(() => alert('UNO !!!')); // function later on should either show UNO or PENALTY
     }
 
     this.clearViewport = function() {
@@ -81,6 +83,7 @@ export default function ViewHandler(facade, spritesLocation, viewportId, tableId
         this.renderDeck(this.facade.getPlayer('p1').deck);
 
         this.renderHistory();
+        this.bindPauseBtn();
     }
 
     this.renderDeck = function(cardDeck, playerDeck = true, topCardOnly = false) {
@@ -187,6 +190,14 @@ export default function ViewHandler(facade, spritesLocation, viewportId, tableId
             buttonImg.src = `${this.spritesLocation}/historyBtn.png`;
             backgroundImg.src = `${this.spritesLocation}/history_closed.png`;
 
+            buttonImg.onmouseenter = () => {
+                buttonImg.src = `${this.spritesLocation}/historyBtn_hover.png`;
+            }
+    
+            buttonImg.onmouseleave = () => {
+                buttonImg.src = `${this.spritesLocation}/historyBtn.png`;
+            }
+
             buttonImg.onclick = () => {
                 
                 historyContainer.classList.toggle('closed');
@@ -213,7 +224,6 @@ export default function ViewHandler(facade, spritesLocation, viewportId, tableId
                     entryText.innerHTML = `<span><strong>${entry.player.name}:</strong> </span>`;
                     entryText.append(this.getCardImg(entry.card));
 
-                    console.log('{made action-place entry}');
                     entryEl.append(entryText);
                     entryListEl.prepend(entryEl);
                     break;
@@ -221,10 +231,8 @@ export default function ViewHandler(facade, spritesLocation, viewportId, tableId
                 case 'action-draw':
                     entryText.innerHTML = `<span><strong>${entry.player.name}:</strong> +${entry.amount}</span>`;
                     
-                    console.log('{made action-draw entry}');
                     entryEl.append(entryText);
                     entryListEl.prepend(entryEl);
-
                     break;
             }
         }
@@ -234,7 +242,54 @@ export default function ViewHandler(facade, spritesLocation, viewportId, tableId
         entryListEl.append(endSpacing);
     }
 
-    ViewHandler.prototype.renderHistoryEntry = function() {
+    ViewHandler.prototype.bindPauseBtn = function() {
+        let pauseEl = document.getElementById('pauseBtn');
+        
+        if(!pauseEl.src) {
+            pauseEl.src = `${this.spritesLocation}/pauseBtn.png`;
+            pauseEl.onclick = () => {
+                // show Settings window with a button that lets you continue the game
+                // this.gameHandler.stopGame();
+            }
+
+            pauseEl.onmouseenter = () => {
+                pauseEl.src = `${this.spritesLocation}/pauseBtn_hover.png`;
+            }
+
+            pauseEl.onmouseleave = () => {
+                pauseEl.src = `${this.spritesLocation}/pauseBtn.png`;
+            }
+        }
+    }
+
+    ViewHandler.prototype.bindUNOButton = function() {
+        let unoBtnContainer = document.getElementById('uno');
+        let unoBtn = document.getElementById('unoBtn');
+        let user = this.facade.getPlayerByIndex(0);
+
+        // you need to shout UNO if you are about to place your second to last card
+        // or you are about to swap decks with a player who has only 1 card
+        if(user.getCardCount() == 2 ||
+        (user.deck.findCardBySymbol('wild_forced_swap') && this.gameHandler.getNextPlayer(user.id).getCardCount() == 1) ) {
+            
+            // button can only be clicked once and if you can place your second to last card
+            if(!user.stateShoutedUno && user.stateInTurn && this.gameHandler.recommendCard(user) != null) {
+                unoBtn.src = `${this.spritesLocation}/unoBtn_active.gif`;
+                unoBtnContainer.className = 'active';
+            }
+
+        } else {
+            unoBtn.src = `${this.spritesLocation}/unoBtn_inactive.png`;
+            unoBtnContainer.className = 'inactive';
+        }
+
+        unoBtn.onclick = () => {
+            if(unoBtnContainer.classList.contains('active') && unoBtnContainer.classList.contains('inactive') == false) {
+                user.stateShoutedUno = true;
+                unoBtn.src = `${this.spritesLocation}/unoBtn_inactive.png`;
+                unoBtnContainer.className = 'inactive';
+            }
+        }
     }
 
     ViewHandler.prototype.getCardImg = function(card) {
@@ -283,6 +338,7 @@ export default function ViewHandler(facade, spritesLocation, viewportId, tableId
 
         if(this.gameHandler.validCard(this.facade.getCardById(cardId))) {
 
+            this.hide('reminderText', true);
             imgEl.classList.add('animationSlideDown');
             setTimeout(() => {
                 imgEl.classList.remove('animationSlideDown');
@@ -299,6 +355,7 @@ export default function ViewHandler(facade, spritesLocation, viewportId, tableId
     ViewHandler.prototype.createAndBindAll = function() {
         this.createAndbindDrawButton();
         this.createAndbindColorSelectBtn();
+        this.bindUNOButton();
     }
     
     ViewHandler.prototype.createAndbindDrawButton = function() {
@@ -389,11 +446,11 @@ export default function ViewHandler(facade, spritesLocation, viewportId, tableId
     ViewHandler.prototype.hide = function(elementId, hide) {
         let element = document.getElementById(elementId);
 
-        if(hide == true || hide == false) {
+        if(element && (hide == true || hide == false)) {
 
-            if(element && hide && element.classList.contains('hidden') == false)
+            if(hide && element.classList.contains('hidden') == false)
                 element.classList.add('hidden');
-            else if(element && hide == false && element.classList.contains('hidden'))
+            else if(hide == false && element.classList.contains('hidden'))
                 element.classList.remove('hidden');
 
         } else {

@@ -11,6 +11,7 @@
 <body>
     <!-- viewport modes: usermode/devmode -->
     <div id="viewport" class="usermode">
+        <div id="reminder"><strong id="reminderText" class="hidden">You're in turn</strong></div>
         <div id="pcAvatar">
             <div id="cardCounter"></div>
             <div id="avatarContainer"></div>
@@ -20,11 +21,23 @@
                 <button id="drawButton" type="button"></button>
             </div>
         </div>
-        <div id="actionsHistory" class="closed">
-            <img id="historyBackground" alt="history">
-            <img id="historyBtn" alt="show history">
-            <div id="entryList"></div>
+        <div id="buttonContainer">
+            <div id="actionsHistory" class="closed">
+                <img id="historyBackground" alt="history">
+                <img id="historyBtn" alt="show history">
+                <div id="entryList"></div>
+            </div>
+            <div id="pause">
+                <img id="pauseBtn" alt="pause game">
+                <div id="pauseScreen" class="hidden">
+                    <img id="screenBackground">
+                </div>
+            </div>
+        </div>
+        <div id="uno">
+            <img id="unoBtn" alt="shout uno">
         </div>
     </div>
+    <div id="pauseScreen" class="hidden"></div>
 </body>
 </html>

@@ -12,6 +12,10 @@ export default function Player(id, name, typePC = false) {
     this.stateInTurn = false;
     this.stateSkipped = false;
     this.optionalDrawPossible = true;
+    this.stateShoutedUno = false;
+    
+    // statistics
+    this.gamesWon = 0;
 }
 
 Player.prototype.clearDeck = function() {

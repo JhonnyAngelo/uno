@@ -17,6 +17,10 @@ Facade.prototype.addPlayer = function(player) {
     this.playerList.push(player);
 }
 
+Facade.prototype.playerIsUser = function(id) {
+    return this.getPlayerIndex(id) == 0;
+}
+
 Facade.prototype.reversePlayerList = function() {
     this.playerList.reverse();
 }
