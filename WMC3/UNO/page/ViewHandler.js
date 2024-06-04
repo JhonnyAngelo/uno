@@ -31,14 +31,15 @@ export default function ViewHandler(facade, spritesLocation, viewportId, tableId
         this.gameHandler.setCallbackRender(() => this.renderAll());
         this.gameHandler.setCallbackCardPlacement((cardId) => this.animateCardPlacement(cardId));
         this.gameHandler.setCallbackWild(() => this.selectColor());
+        this.gameHandler.setCallbackForcedSwap(() => this.startDeckSwapAnimation());
         this.gameHandler.setCallbackGameWon((player) => alert(`${player.name} has won!`));
+        this.gameHandler.setCallBackReminder((hide) => this.hide('reminderText', hide));
+        this.gameHandler.setCallbackShoutUNO(() => alert('UNO !!!')); // function later on should either show UNO or PENALTY
 
         // avatar
         this.gameHandler.setCallbackAvatarStateIdle(() => document.getElementById('avatar').src = `${this.spritesLocation}/pc/pc_idle.gif`);
         this.gameHandler.setCallbackAvatarStateThinking(() => document.getElementById('avatar').src = `${this.spritesLocation}/pc/pc_thinking.gif`);
         this.gameHandler.setCallbackAvatarStateWon(() => document.getElementById('avatar').src = `${this.spritesLocation}/pc/pc_won.png`);
-        this.gameHandler.setCallBackReminder((hide) => this.hide('reminderText', hide));
-        this.gameHandler.setCallbackShoutUNO(() => alert('UNO !!!')); // function later on should either show UNO or PENALTY
     }
 
     this.clearViewport = function() {
@@ -84,6 +85,12 @@ export default function ViewHandler(facade, spritesLocation, viewportId, tableId
 
         this.renderHistory();
         this.bindPauseBtn();
+
+        // testing
+        if(this.facade.getPlayerInTurn())
+            document.getElementById('playerInTurn').innerHTML = this.facade.getPlayerInTurn().name;
+        else
+            document.getElementById('playerInTurn').innerHTML = 'NULL';
     }
 
     this.renderDeck = function(cardDeck, playerDeck = true, topCardOnly = false) {
@@ -342,13 +349,14 @@ export default function ViewHandler(facade, spritesLocation, viewportId, tableId
             imgEl.classList.add('animationSlideDown');
             setTimeout(() => {
                 imgEl.classList.remove('animationSlideDown');
+                this.hide(cardId, true); // needed for [ForcedSwap] so that the card doesn't reappear while all other one's are sliding down
                 this.gameHandler.makeTurn(parentId, cardId);
-                this.renderAll();
             }, 500);
         
         } else {
+            imgEl.classList.add('shake');
+            setTimeout(() => imgEl.classList.remove('shake'), 250);
             errorMessage(`You can't place that card, ${this.facade.getPlayer(parentId).name}!`);
-            // another animation (short; left-right-left-right) to make user understand that he can't place you
         }
     }
 
@@ -435,6 +443,47 @@ export default function ViewHandler(facade, spritesLocation, viewportId, tableId
 
         this.viewport.append(windowEl);
         this.hide('colorSelectBox', this.wildWindowActive == false);
+    }
+
+    ViewHandler.prototype.startDeckSwapAnimation = function() {
+        let user = this.facade.getPlayerByIndex(0);
+        let cardCount = user.getCardCount();
+        let animationDuration = cardCount*500 + cardCount/2 * (50*1 + 50*cardCount); // using sum of arithmetic sequence formula
+
+        this.gameHandler.stopGame();
+
+        // start animation for pc avatar
+        let playerInTurn = this.gameHandler.playerInTurn;
+        if(playerInTurn && playerInTurn.type == 'COMPUTER_PLAYER') {
+            // ...
+        } else {
+            // other animation
+        }
+
+        for(let i = 0; i < cardCount; i++) {
+            let card = user.deck.cardList[i];
+            let cardEl = document.getElementById(card.id);
+
+            setTimeout(() => {
+                cardEl.classList.add('animationSlideDown');
+                setTimeout(() => {
+                    this.hide(cardEl.id, true);
+                    cardEl.classList.remove('animationSlideDown');
+                    
+                    if(i == cardCount-1) {
+                        if(playerInTurn && playerInTurn.type == 'PLAYER') {
+                            this.gameHandler.continueGame(false);
+                        } else {
+                            alert('helllo');
+                            this.gameHandler.continueGame(true);
+                        }
+                    }
+                }, 500);
+            
+            }, 50 * (i+1));
+        }
+
+        return animationDuration;
     }
 
     ViewHandler.prototype.selectColor = function() {

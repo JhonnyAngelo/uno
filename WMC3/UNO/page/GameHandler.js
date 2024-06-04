@@ -20,7 +20,14 @@ GameHandler.prototype.setCallbackCardPlacement = function(callback) { this.cardP
 
 GameHandler.prototype.setCallbackWild = function(callback) { this.wildCallback = callback; }
 
+GameHandler.prototype.setCallbackForcedSwap = function(callback) { this.forcedSwapCallback = callback; }
+
 GameHandler.prototype.setCallbackGameWon = function(callback) { this.gameWonCallback = callback; }
+
+GameHandler.prototype.setCallBackReminder = function(callback) { this.reminderCallback = callback; }
+
+GameHandler.prototype.setCallbackShoutUNO = function(callback) { this.shoutUNOCallback = callback; }
+
 
 GameHandler.prototype.setCallbackAvatarStateIdle = function(callback) { this.avatarIdleCallback = callback; }
 
@@ -28,9 +35,6 @@ GameHandler.prototype.setCallbackAvatarStateThinking = function(callback) { this
 
 GameHandler.prototype.setCallbackAvatarStateWon = function(callback) { this.avatarWonCallback = callback; }
 
-GameHandler.prototype.setCallBackReminder = function(callback) { this.reminderCallback = callback; }
-
-GameHandler.prototype.setCallbackShoutUNO = function(callback) { this.shoutUNOCallback = callback; }
 
 GameHandler.prototype.startGame = function(...players) {
 
@@ -52,36 +56,28 @@ GameHandler.prototype.startGame = function(...players) {
 }
 
 GameHandler.prototype.stopGame = function() {
-    if(this.gameStopped == false) {
-        
-        this.gameStopped = true;
-        console.log('\x1b[36m%s\x1b[0m', '[game stopped]');
 
-        for(let player of this.facade.getPlayerList())
-            player.stateInTurn = false;
+    this.gameStopped = true;
+    console.log('\x1b[36m%s\x1b[0m', '[game stopped]');
 
-    } else {
-        errorMessage('Game is already stopped!');
+    for(let player of this.facade.getPlayerList()) {
+        if(player.stateInTurn == true)
+            this.playerInTurn = player;
+        player.stateInTurn = false;
     }
 }
 
 GameHandler.prototype.continueGame = function(moveTurn) {
-    if(this.gameStopped == true) {
 
-        this.gameStopped = false;
-        console.log('\x1b[36m%s\x1b[0m', '[game continued]');
-    
+    this.gameStopped = false;
+    console.log('\x1b[36m%s\x1b[0m', '[game continued]');
 
-        if(moveTurn == false)
-            this.playerInTurn.stateInTurn = true;
-        else if(moveTurn)
-            this.moveTurn(this.playerInTurn);
-        else
-            errorMessage('Missing parameter moveTurn in continueGame()!');
-
-    } else {
-        errorMessage('Game is already underway!');
-    }
+    if(moveTurn == false)
+        this.playerInTurn.stateInTurn = true;
+    else if(moveTurn)
+        this.moveTurn(this.playerInTurn);
+    else
+        errorMessage('Missing parameter moveTurn in continueGame()!');
 }
 
 GameHandler.prototype.addPlayer = function(player) {
@@ -167,6 +163,66 @@ GameHandler.prototype.assignDecks = function(cardDeck) {
     for(let i = 0; i < cardList.length-1; i++) {
         availableCardsDeck.add(cardList[i]);
     }
+}
+
+GameHandler.prototype.makeTurn = function(playerId, cardId) {
+    let player = this.facade.getPlayer(playerId);
+    let card = player.deck.getCard(cardId);
+
+    if(player.stateSkipped == false && this.validCard(card)) {
+        this.facade.getTopCard().resetChosenColor();
+        this.facade.removePlayerCard(playerId, cardId);
+        this.facade.tableDeck.add(card);
+
+        this.checkSpecialCard(card, playerId);
+        this.determineEnd();
+        this.moveTurn(player);
+
+        return true;
+    
+    } else if(this.validCard(card) == false) {
+        errorMessage(`Card${cardId} can't be placed now!`);
+    
+    } else {
+        errorMessage(`You're not in turn! (You were skipped)`);
+    }
+
+    return false;
+}
+
+GameHandler.prototype.moveTurn = function(currPlayer) {
+
+    // hide reminder message for user
+    this.reminderCallback(true);
+
+    if(this.gameStopped)
+        return;
+
+    // before moving on check if player has shouted UNO!
+    this.checkUNO(currPlayer);
+    
+    currPlayer.stateInTurn = false;
+    currPlayer.optionalDrawPossible = true;
+
+    let nextPlayer = this.getNextPlayer(currPlayer.id);
+    nextPlayer.stateInTurn = true;
+    this.playerInTurn = nextPlayer;
+    nextPlayer.optionalDrawPossible = true;
+
+    if(this.previousCardWasDrawCard == false || !nextPlayer.canIncreaseDrawCounter(this.facade.getTopCard())) {
+        this.assignDraw(nextPlayer);
+    }
+
+    // start Computer AI if he's in turn
+    if(nextPlayer.type == 'COMPUTER_PLAYER') {
+        this.computerStart(nextPlayer);
+
+    // remind user that he's in turn
+    } else if(this.facade.playerIsUser(nextPlayer.id)) {
+        this.countInactivity();
+    }
+    
+    this.renderCallback();
 }
 
 GameHandler.prototype.determineEnd = function() {
@@ -282,66 +338,6 @@ GameHandler.prototype.optionalDraw = function(player) {
     return assignedCard;
 }
 
-GameHandler.prototype.makeTurn = function(playerId, cardId) {
-    let player = this.facade.getPlayer(playerId);
-    let card = player.deck.getCard(cardId);
-
-    if(player.stateSkipped == false && this.validCard(card)) {
-        this.facade.getTopCard().resetChosenColor();
-        this.facade.removePlayerCard(playerId, cardId);
-        this.facade.tableDeck.add(card);
-
-        this.checkSpecialCard(card, playerId);
-        this.determineEnd();
-        this.moveTurn(player);
-
-        return true;
-    
-    } else if(this.validCard(card) == false) {
-        errorMessage(`Card${cardId} can't be placed now!`);
-    
-    } else {
-        errorMessage(`You're not in turn! (You were skipped)`);
-    }
-
-    return false;
-}
-
-GameHandler.prototype.moveTurn = function(currPlayer) {
-    
-    // hide reminder message for user
-    this.reminderCallback(true);
-
-    if(this.gameStopped)
-        return;
-
-    // before moving on check if player has shouted UNO!
-    this.checkUNO(currPlayer);
-    
-    currPlayer.stateInTurn = false;
-    currPlayer.optionalDrawPossible = true;
-
-    let nextPlayer = this.getNextPlayer(currPlayer.id);
-    nextPlayer.stateInTurn = true;
-    this.playerInTurn = nextPlayer;
-    nextPlayer.optionalDrawPossible = true;
-
-    if(this.previousCardWasDrawCard == false || !nextPlayer.canIncreaseDrawCounter(this.facade.getTopCard())) {
-        this.assignDraw(nextPlayer);
-    }
-
-    // start Computer AI if he's in turn
-    if(nextPlayer.type == 'COMPUTER_PLAYER') {
-        this.computerStart(nextPlayer);
-
-    // remind user that he's in turn
-    } else if(this.facade.playerIsUser(nextPlayer.id)) {
-        this.countInactivity();
-    }
-    
-    this.renderCallback();
-}
-
 GameHandler.prototype.getNextPlayer = function(currPlayerId, considerStateSkipped = true) {
     let currIndex = this.facade.getPlayerIndex(currPlayerId);
     let nextPlayer = null;
@@ -365,30 +361,17 @@ GameHandler.prototype.getNextPlayer = function(currPlayerId, considerStateSkippe
 
     return nextPlayer;
 }
-/*
-GameHandler.prototype.getPreviousPlayer = function(currPlayerId) {
-    let currIndex = this.facade.getPlayerIndex(currPlayerId);
-    let prevPlayer = null;
 
-    if(currIndex >= 0) {
-
-        if(currIndex == 0)
-            prevPlayer = this.facade.getPlayerByIndex(this.facade.getPlayerCount() - 1);
-        else
-            prevPlayer = this.facade.getPlayerByIndex(currIndex - 1);
-    }
-
-    return prevPlayer;
-}
-*/
 GameHandler.prototype.validCard = function(placedCard) {
     let topCard = this.facade.getTopCard();
 
     // any wild card automatically counts as a valid turn
     // if the previous card on top of the tableDeck was the Wild card (so only with the color change), only the color is compared
     // else color or symbol have to be equal for it to be valid
+    if(topCard.isWild() && topCard.getChosenColor() == null)
+        return false;
 
-    return  placedCard.color == 'black' || topCard.getChosenColor() == placedCard.color || topCard.color == placedCard.color || topCard.symbol == placedCard.symbol;
+    return placedCard.color == 'black'  || topCard.getChosenColor() == placedCard.color || topCard.color == placedCard.color || topCard.symbol == placedCard.symbol;
 }
 
 GameHandler.prototype.turnPossible = function(player) {
@@ -419,7 +402,10 @@ GameHandler.prototype.checkSpecialCard = function(card, currPlayerId) {
 
     specialCards['wild'] = () => this.wild(currPlayerId);
     specialCards['wild_draw_4'] = () => { this.wild(currPlayerId); this.increaseDrawCount(4);}
-    specialCards['wild_forced_swap'] = () => { this.forceASwap(currPlayerId); this.wild(currPlayerId);}
+    specialCards['wild_forced_swap'] = () => {   
+        let animationDuration = this.forceASwap(currPlayerId);
+        setTimeout(() => this.wild(currPlayerId), 500);
+    }
 
     if(inArray(card.symbol, ['draw_2', 'reverse', 'skip', 'wild', 'wild_draw_4', 'wild_forced_swap'])) {
         specialCards[card.symbol]();
@@ -474,7 +460,7 @@ GameHandler.prototype.wild = function(playerId) {
     if(this.facade.playerIsUser(playerId)) {
         this.wildCallback();
         
-    } else {
+    } else if(player.type == 'COMPUTER_PLAYER') {
         color = player.deck.getMostFrequentColor();
         this.facade.getTopCard().setChosenColor(color);
 
@@ -488,11 +474,13 @@ GameHandler.prototype.wild = function(playerId) {
 GameHandler.prototype.forceASwap = function(currPlayerId) {
     let currPlayer = this.facade.getPlayer(currPlayerId);
 
-    // ask the player to pick another player to swap cards with
+    // ( ask the player to pick another player to swap cards with )
     // if there are only two players he automatically swaps with his only opponent
     
     if(this.facade.getPlayerCount() == 2) {
+        let animationDuration = this.forcedSwapCallback();
         currPlayer.swapDeck(this.getNextPlayer(currPlayerId, false));
+        return animationDuration;
     }
 }
 
@@ -599,9 +587,9 @@ GameHandler.prototype.computerPlaceRandomCard = function(computerPlayer) {
         }
     }
     
-    console.log("[PC doesn't have any cards - picking a card from the table...]");
+    console.log("[PC doesn't have any placeable cards - picking a card from the table...]");
     drawnCard = this.optionalDraw(computerPlayer);
-    if(drawnCard)
+    if(drawnCard && this.validCard(drawnCard))
         this.cardPlacementCallback(drawnCard.id);
 }
 

@@ -11,7 +11,7 @@
 #viewport.usermode #aDeck,
 #viewport.usermode #table h6,
 #viewport.usermode .opponent {
-    display: none !important;
+    display: none;
 }
 
 #viewport.devmode #table {
@@ -70,6 +70,7 @@
 
 #tDeck .card {
     height: 120px;
+    display: inline; /* override the .hidden class */
 }
 
 /* -------------- avatar ------------- */

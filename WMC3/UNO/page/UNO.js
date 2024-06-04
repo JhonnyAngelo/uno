@@ -21,7 +21,8 @@ function startTest(viewHandler) {
         new Card('test04', 'green', '1'),
         new Card('test05', 'green', '1'),*/
         new Card('test06', 'blue', 'draw_2'),
-        new Card('test07', 'blue', 'draw_2')
+        new Card('test07', 'blue', 'draw_2'),
+        new Card('testFS_User', 'black', 'wild_forced_swap')
     ];
     
     let cardList2 = [
@@ -31,7 +32,8 @@ function startTest(viewHandler) {
         new Card('test11', 'green', '1'),
         new Card('test12', 'red', 'draw_2'),
         new Card('test13', 'green', 'draw_2'),
-        new Card('test14', 'black', 'wild_draw_4')
+        new Card('test14', 'black', 'wild_draw_4'),
+        new Card('testFS_Pc', 'black', 'wild_forced_swap')
     ];
 
     for(let i = 0; i < cardList1.length; i++) {
