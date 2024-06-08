@@ -1,7 +1,7 @@
 import GameHandler from './GameHandler.js';
 import Player from './valueObjects/Player.js';
 import GameSettings from './valueObjects/GameSettings.js';
-import {errorMessage} from './help.js';
+import {errorMessage, compareObjects} from './help.js';
 
 export default function ViewHandler(facade, spritesLocation, viewportId, tableId, deckId) {
     
@@ -15,16 +15,21 @@ export default function ViewHandler(facade, spritesLocation, viewportId, tableId
     this.drawButtonEl = null;
     this.wildWindowActive = false;
 
-    this.startGame = function() {
-        this.setCallBacks();
-        this.gameHandler.startGame(new Player('p1', 'user'), new Player('p2', 'pc', true));
-        this.renderAll();
-    }
+    this.startGame = function(/* test cases: */ deck1, deck2, topCard) {
+        this.loadFacade();
 
-    this.startTestGame = function(deck1, deck2, topCard) {
-        this.startGame();
-        this.gameHandler.assignTestDecks(deck1, deck2, topCard);
-        this.renderAll();
+        setTimeout(() => {
+            
+            this.setCallBacks();
+
+            this.gameHandler.startGame(new Player('p1', 'user'), new Player('p2', 'pc', true));
+            
+            if(deck1 && deck2 && topCard) // test cases
+                this.gameHandler.assignTestDecks(deck1, deck2, topCard);
+            
+            this.renderAll();
+
+        }, 10);
     }
 
     this.setCallBacks = function() {
@@ -69,10 +74,16 @@ export default function ViewHandler(facade, spritesLocation, viewportId, tableId
             this.renderPcAvatar();
     }
 
-    this.renderAll = function() {
+    ViewHandler.prototype.loadFacade = function() {
+        this.facade.loadSettings();
+    }
+
+    ViewHandler.prototype.renderAll = function() {
+
+        console.log(`%c[Settings] fs: ${this.facade.settings.includeWildForcedSwap} d+: ${this.facade.settings.drawCardIncreasesValue}`, 'color: green');
 
         console.log('[rendering viewport]');
-
+        
         this.clearViewport();
         this.deckContainer.append(this.tableContainer);
 
@@ -85,12 +96,6 @@ export default function ViewHandler(facade, spritesLocation, viewportId, tableId
 
         this.renderHistory();
         this.bindPauseBtn();
-
-        // testing
-        if(this.facade.getPlayerInTurn())
-            document.getElementById('playerInTurn').innerHTML = this.facade.getPlayerInTurn().name;
-        else
-            document.getElementById('playerInTurn').innerHTML = 'NULL';
     }
 
     this.renderDeck = function(cardDeck, playerDeck = true, topCardOnly = false) {
@@ -99,8 +104,8 @@ export default function ViewHandler(facade, spritesLocation, viewportId, tableId
 
             let deckEl = document.createElement('div');
             deckEl.id = cardDeck.id;
-            //deckEl.innerHTML = `<h6>${cardDeck.name}</h6>`;
-            
+            // deckEl.innerHTML = `<h6>${cardDeck.name}</h6>`;
+
             let deckContainer = document.createElement('div');
             deckContainer.playerId = cardDeck.id;
             deckContainer.className = 'deckContainer';
@@ -126,7 +131,7 @@ export default function ViewHandler(facade, spritesLocation, viewportId, tableId
                     if(this.facade.getPlayer(deckEl.id).isInTurn() == false) {
                         
                         let coverEl = document.createElement('div');
-                        coverEl.classList = 'deckCover';
+                        coverEl.classList = 'cover deckCover';
                         deckEl.prepend(coverEl);
                     }
 
@@ -140,6 +145,9 @@ export default function ViewHandler(facade, spritesLocation, viewportId, tableId
             } else {
                 this.tableContainer.append(deckEl);
             }
+
+            if(deckEl.id == 'aDeck')
+                this.hide('aDeck', true);
 
             // render PC avatar
 
@@ -256,7 +264,8 @@ export default function ViewHandler(facade, spritesLocation, viewportId, tableId
             pauseEl.src = `${this.spritesLocation}/pauseBtn.png`;
             pauseEl.onclick = () => {
                 // show Settings window with a button that lets you continue the game
-                // this.gameHandler.stopGame();
+                this.gameHandler.stopGame();
+                this.hide('pauseScreen', false);
             }
 
             pauseEl.onmouseenter = () => {
@@ -272,7 +281,7 @@ export default function ViewHandler(facade, spritesLocation, viewportId, tableId
     ViewHandler.prototype.bindUNOButton = function() {
         let unoBtnContainer = document.getElementById('uno');
         let unoBtn = document.getElementById('unoBtn');
-        let user = this.facade.getPlayerByIndex(0);
+        let user = this.facade.getUser();
 
         // you need to shout UNO if you are about to place your second to last card
         // or you are about to swap decks with a player who has only 1 card
@@ -363,6 +372,7 @@ export default function ViewHandler(facade, spritesLocation, viewportId, tableId
     ViewHandler.prototype.createAndBindAll = function() {
         this.createAndbindDrawButton();
         this.createAndbindColorSelectBtn();
+        this.createAndBindPauseScreen();
         this.bindUNOButton();
     }
     
@@ -445,6 +455,130 @@ export default function ViewHandler(facade, spritesLocation, viewportId, tableId
         this.hide('colorSelectBox', this.wildWindowActive == false);
     }
 
+    ViewHandler.prototype.createAndBindPauseScreen = function() {
+        let pauseScreen = document.createElement('div');
+        pauseScreen.id = 'pauseScreen';
+        pauseScreen.className = 'window hidden';
+        this.viewport.append(pauseScreen);
+
+        pauseScreen.innerHTML = '<div id="pauseCover" class="cover"</div>';
+
+        let backgroundImg = document.createElement('img');
+        backgroundImg.id = 'screenBackground';
+        backgroundImg.alt = 'pause screen background';
+        backgroundImg.src = `${this.spritesLocation}/pause_screen.png`;
+        pauseScreen.append(backgroundImg);
+
+        let formEl = document.createElement('form');
+        formEl.id = 'settingsForm';
+        formEl.method = 'POST';
+        formEl.action = `${this.facade.unoDao.baseurl}/settings`;
+        pauseScreen.append(formEl);
+
+        formEl.innerHTML = `<div id="pauseScreenContainer">
+        <h1>Settings</h1>
+        <p>Forced Swap Card</p>
+        
+        <input type="radio" id="forcedSwapEnabled" name="forcedSwap" value="enabled">
+        <label for="forcedSwapEnabled">Enabled</label>
+        
+        <input type="radio" id="forcedSwapDisabled" name="forcedSwap" value="disabled">
+        <label for="forcedSwapDisabled">Disabled</label>
+
+        <p>Be able to stack draw2 & draw4</p>
+        
+        <input type="radio" id="stackYes" name="drawStacking" value="enabled">
+        <label for="stackYes">Yes</label>
+        
+        <input type="radio" id="stackNo" name="drawStacking" value="disabled">
+        <label for="stackNo">No</label>
+        <div id="pauseScreenButtons"></div>
+        </div>`;
+
+        if(this.facade.settings.includeWildForcedSwap == 'enabled')
+            document.getElementById('forcedSwapEnabled').checked = true;
+        else if(this.facade.settings.includeWildForcedSwap  == 'disabled')
+            document.getElementById('forcedSwapDisabled').checked = true;
+
+        if(this.facade.settings.drawCardIncreasesValue  == 'enabled')
+            document.getElementById('stackYes').checked = true;
+        else if(this.facade.settings.drawCardIncreasesValue  == 'disabled')
+            document.getElementById('stackNo').checked = true;
+
+        let restartBtn = document.createElement('img');
+        restartBtn.id = 'restartBtn';
+        restartBtn.alt = 'restart game';
+        restartBtn.src = `${this.spritesLocation}/restartBtn.png`;
+
+        restartBtn.onmouseenter = () => {
+            restartBtn.src = `${this.spritesLocation}/restartBtn_hover.png`;
+        }
+        restartBtn.onmouseleave = () => {
+            restartBtn.src = `${this.spritesLocation}/restartBtn.png`;
+        }
+
+        let continueBtn = document.createElement('img');
+        continueBtn.id = 'continueBtn';
+        continueBtn.alt = 'continue game';
+        continueBtn.src = `${this.spritesLocation}/continueBtn.png`;
+
+        continueBtn.onmouseenter = () => {
+            continueBtn.src = `${this.spritesLocation}/continueBtn_hover.png`;
+        }
+        continueBtn.onmouseleave = () => {
+            continueBtn.src = `${this.spritesLocation}/continueBtn.png`;
+        }
+        /*
+        let saveSettingsBtn = document.createElement('img');
+        saveSettingsBtn.id = 'saveSettingsBtn';
+        saveSettingsBtn.alt = 'save settings';
+        saveSettingsBtn.src = `${this.spritesLocation}/saveSettingsBtn.png`;
+
+        saveSettingsBtn.onmouseenter = () => {
+            saveSettingsBtn.src = `${this.spritesLocation}/saveSettingsBtn_hover.png`;
+        }
+        saveSettingsBtn.onmouseleave = () => {
+            saveSettingsBtn.src = `${this.spritesLocation}/saveSettingsBtn.png`;
+        }
+        */
+        let btnContainer = document.getElementById('pauseScreenButtons');
+
+        btnContainer.append(restartBtn);
+        btnContainer.append(continueBtn);
+        //btnContainer.append(saveSettingsBtn);
+
+        restartBtn.onclick = () => {
+            
+            if(confirm('If you resart the game, you will loose your progress on this round.\nAre you sure?'))
+                location.reload();
+        }
+        
+        continueBtn.onclick = () => {
+
+            let settings = this.facade.settings;
+
+            if(settings.includeWildForcedSwap != this.getRadioOption('forcedSwap') ||
+                settings.drawCardIncreasesValue != this.getRadioOption('drawStacking')) {
+
+                if(confirm('Changing the settings will restart the game.\nAre you sure?')) {
+
+                    settings.includeWildForcedSwap = this.getRadioOption('forcedSwap');
+                    settings.drawCardIncreasesValue = this.getRadioOption('drawStacking');
+                    this.facade.saveSettings(() => location.reload());
+                }
+            
+            } else {
+                this.hide('pauseScreen', true);
+                this.gameHandler.continueGame(false);
+            }
+        };
+        /*
+        saveSettingsBtn.onclick = () => {
+            console.log('[saved settings]');
+        };
+        */
+    }
+
     ViewHandler.prototype.startDeckSwapAnimation = function() {
         let user = this.facade.getPlayerByIndex(0);
         let cardCount = user.getCardCount();
@@ -474,7 +608,6 @@ export default function ViewHandler(facade, spritesLocation, viewportId, tableId
                         if(playerInTurn && playerInTurn.type == 'PLAYER') {
                             this.gameHandler.continueGame(false);
                         } else {
-                            alert('helllo');
                             this.gameHandler.continueGame(true);
                         }
                     }
@@ -509,5 +642,16 @@ export default function ViewHandler(facade, spritesLocation, viewportId, tableId
 
     ViewHandler.prototype.isUser = function(id) {
         return id == this.facade.getPlayerByIndex(0).id;
+    }
+
+    ViewHandler.prototype.getRadioOption = function(name) {
+        let radioOptions = document.getElementsByName(name);
+
+        for(let option of radioOptions)
+            if(option.checked) {
+                return option.value;
+            }
+
+        return null;
     }
 }

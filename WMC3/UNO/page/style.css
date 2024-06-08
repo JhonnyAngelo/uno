@@ -2,13 +2,7 @@
     margin-top: 4em;
 }
 
-#viewport.devmode #aDeck {
-    /* display: block; */
-    display: none;
-}
-
 .hidden,
-#viewport.usermode #aDeck,
 #viewport.usermode #table h6,
 #viewport.usermode .opponent {
     display: none;
@@ -147,13 +141,17 @@
     padding: 10px;
 }
 
-.playerDeck .deckCover {
+.cover {
     background-color: rgba(255, 255, 255, 0.5);
-
     position: fixed;
+    width: 100vw;
+    height: 100vh;
+}
+
+.playerDeck .deckCover {
     margin: -1.5rem -1em;
-    width: 100%;
     padding: 7em;
+    height: 100%;
 }
 
 /* ------- color select window ------- */
@@ -164,7 +162,7 @@
     left: 50%;
     transform: translate(-50%, -50%);
     
-    height: 100%;
+    height: 70%;
 }
 
 #colorSelect {
@@ -210,7 +208,7 @@
 #actionsHistory {
     position: fixed;
     top: 25px;
-    right: 106px;
+    /* right: 106px; */
 
     height: 292px;
     width: 144px;
@@ -220,6 +218,12 @@
     position: absolute;
 }
 
+#actionsHistory {
+    position: absolute;
+    top: 0;
+    right: -20px;
+}
+
 #actionsHistory.closed #entryList {
     display: none;
 }
@@ -227,6 +231,13 @@
 #historyBtn {
     height: 56px;
     left: 44px;
+}
+
+@media screen and (max-width: 649px) {
+    #actionsHistory {
+        top: 90px;
+        left: 0;
+    }
 }
 
 #historyBackground {
@@ -288,14 +299,6 @@
     left: 44px;
 }
 
-#pauseScreen {
-    background-color: rgba(255, 255, 255, 0.5);
-    position: fixed;
-    top: 0;
-    height: 100%;
-    width: 100%;
-}
-
 #uno {
     position: fixed;
     right: 2em;
@@ -304,4 +307,94 @@
 
 #unoBtn {
     height: 96px;
+}
+
+/* ----------- pause screen ---------- */
+
+#pauseScreen {
+    /* background-color: rgba(255, 255, 255, 0.5); */
+    position: fixed;
+    width: 80%;
+}
+
+#screenBackground, #settingsForm {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+#screenBackground {
+    width: 100%;
+}
+
+#settingsForm {
+    width: 86%;
+}
+
+#settingsForm p {
+    margin: 0;
+}
+
+#settingsForm input {
+    margin-bottom: 2em;
+}
+
+@media screen and (min-width: 1200px) {
+    #settingsForm {
+        font-size: larger;
+    }
+}
+
+@media screen and (min-width: 950px) and (max-width: 1199px) {
+    #settingsForm {
+        font-size: medium;
+    }
+}
+
+@media screen and (min-width: 800px) and (max-width: 949px) {
+    #settingsForm {
+        font-size: small;
+    }
+}
+
+@media screen and (min-width: 650px) and (max-width: 799px) {
+    #settingsForm {
+        font-size: x-small;
+    }
+}
+
+@media screen and (max-width: 649px) {
+    #settingsForm {
+        font-size: 50%;
+    }
+
+    #pauseScreenButtons {
+        position: absolute;
+        flex-direction: column;
+        top: 2em;
+        right: -17em;
+    }
+}
+
+#pauseScreenContainer {
+    width: 100%;
+}
+
+#pauseScreenButtons {
+    display: flex;
+    justify-content: center;
+    margin-left: -2.6em;
+}
+
+#pauseScreenButtons img {
+    padding: 1em 0.5em;
+    width: 30%;
+}
+
+#pauseCover {
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: rgba(0, 0, 0, 0.5);
 }

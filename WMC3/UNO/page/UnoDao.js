@@ -67,8 +67,8 @@ UnoDao.prototype.prepareRequest = function(method, path) {
 }
 
 UnoDao.prototype.checkFileName = function(fileName) {
-    if(fileName != 'decks' && fileName != 'players') {
-        errorMessage(`${fileName}.json does not exist! (available: decks/players.json)`);
+    if(fileName != 'decks' && fileName != 'players' && fileName != 'settings') {
+        errorMessage(`${fileName}.json does not exist! (available: decks/players/settings.json)`);
         return false;
     }
     return true;

@@ -1,0 +1,11 @@
+{
+  "settings": [
+    {
+      "id": "1",
+      "type": "GAME_SETTINGS",
+      "includeWildForcedSwap": "disabled",
+      "drawCardIncreasesValue": "enabled",
+      "difficulty": 1
+    }
+  ]
+}

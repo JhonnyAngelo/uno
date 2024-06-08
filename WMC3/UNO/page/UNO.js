@@ -26,10 +26,10 @@ function startTest(viewHandler) {
     ];
     
     let cardList2 = [
-        new Card('test08', 'blue', '0'),
+        new Card('test08', 'blue', '0'),/*
         new Card('test09', 'red', '0'),
         new Card('test10', 'blue', '1'),
-        new Card('test11', 'green', '1'),
+        new Card('test11', 'green', '1'),*/
         new Card('test12', 'red', 'draw_2'),
         new Card('test13', 'green', 'draw_2'),
         new Card('test14', 'black', 'wild_draw_4'),
@@ -44,7 +44,7 @@ function startTest(viewHandler) {
         deck2.add(cardList2[i]);
     }
 
-    viewHandler.startTestGame(deck1, deck2, new Card('top', 'blue', '1'));
+    viewHandler.startGame(deck1, deck2, new Card('top', 'blue', '1'));
 }
 
 start();

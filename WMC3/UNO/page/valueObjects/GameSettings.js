@@ -1,6 +1,5 @@
-// (supposed to be inside the GameHandler)
-
 export default function GameSettings(includeWildForcedSwap, drawCardIncreasesValue, difficulty) { // not shure if I should implement
+    this.id = "1";
     this.type = 'GAME_SETTINGS';
     
     // default settings

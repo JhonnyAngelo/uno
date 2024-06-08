@@ -8,7 +8,7 @@ export default function Facade(baseurl) {
     this.playerList = [];
     this.tableDeck = new CardDeck('tableDeck', 'tDeck');
     this.availableCardsDeck = new CardDeck('availableCardsDeck', 'aDeck');
-    this.settings = new GameSettings();
+    this.settings = new GameSettings('enabled', 'enabled', 1);
     this.unoDao = new UnoDao(baseurl);
     this.history = new History();
 }
@@ -19,6 +19,12 @@ Facade.prototype.addPlayer = function(player) {
 
 Facade.prototype.playerIsUser = function(id) {
     return this.getPlayerIndex(id) == 0;
+}
+
+Facade.prototype.getUser = function() {
+    for(let player of this.playerList)
+        if(player.type = 'PLAYER')
+            return player;
 }
 
 Facade.prototype.reversePlayerList = function() {
@@ -32,10 +38,6 @@ Facade.prototype.removePlayerCard = function(playerId, cardId) {
     this.history.addActionCardPlacement(player, player.deck.getCard(cardId));
 
     return player.removeCard(cardId);
-}
-
-Facade.prototype.getSettings = function() {
-    return this.settings;
 }
 
 Facade.prototype.getTopCard = function() {
@@ -169,4 +171,24 @@ Facade.prototype.updateHistory = function(callback) {
 }
 
 Facade.prototype.clearHistory = function(entryId, callback) {
+}
+
+
+Facade.prototype.saveSettings = function(callback) {
+    this.unoDao.deleteObject('settings', "1", (response) => console.log(response));
+    this.unoDao.addObject('settings', this.settings, callback);
+}
+
+Facade.prototype.loadSettings = function() {
+    this.unoDao.loadObjects('settings', (objects) => {
+        let loadedSettings = objects[0];
+
+        if(loadedSettings && loadedSettings.type == 'GAME_SETTINGS') {
+            this.settings = loadedSettings;
+            console.log(`%c[Settings] fs: ${this.settings.includeWildForcedSwap} d+: ${this.settings.drawCardIncreasesValue}`, 'color: green');
+
+        } else {
+            errorMessage('Failed to load settings!');
+        }
+    });
 }

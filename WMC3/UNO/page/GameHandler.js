@@ -2,11 +2,10 @@ import Card from './valueObjects/Card.js';
 import CardDeck from './valueObjects/CardDeck.js';
 import {errorMessage, inArray, getRandomInt} from './help.js';
 
-export default function GameHandler(facade, settings) {
+export default function GameHandler(facade) {
     this.type = 'ACTION_LISTENER';
     
     this.facade = facade;
-    this.settings = settings;
 
     this.drawCount = 0;
     this.gameStopped = false;
@@ -94,6 +93,8 @@ GameHandler.prototype.generateGlobalCardDeck = function() {
     let symbolList = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'draw_2', 'reverse', 'skip', 'wild', 'wild_draw_4', 'wild_forced_swap'];
     let id = 1;
 
+    let forcedSwapDisabled = this.facade.settings.includeWildForcedSwap == 'disabled';
+
     // red, blue, green , yellow - 4 main colors with 25 cards each
     for(let color = 0; color < 4; color++) {
 
@@ -108,8 +109,13 @@ GameHandler.prototype.generateGlobalCardDeck = function() {
         }
     }
 
+    // take out the 'wild_forced_swap' card if disabled in the settings
+    if(this.facade.settings.includeWildForcedSwap == 'disabled') {
+        symbolList.pop();
+    }
+
     // there are 3 black or 'Wild' cards each appearing 4 times
-    for(let symbol = 13; symbol < 16; symbol++) {
+    for(let symbol = 13; symbol < symbolList.length; symbol++) {
         for(let i = 0; i < 4; i++) {
             globalCardDeck.add(new Card(`card${id++}`, 'black', symbolList[symbol]));
         }
@@ -124,7 +130,7 @@ GameHandler.prototype.generateGlobalCardDeck = function() {
 
 function printCards(cardList) { // for console testing
     let message = `[generated deck with ${cardList.length} cards]\n`;
-    for(let i = 0; i < 112; i++) {
+    for(let i = 0; i < cardList.length; i++) {
         message += `\n${cardList[i].color} - ${cardList[i].symbol}`;
     }
 
@@ -412,8 +418,16 @@ GameHandler.prototype.checkSpecialCard = function(card, currPlayerId) {
     }
 
     if(inArray(card.symbol, ['draw_2', 'wild_draw_4'])) {
-        if(this.settings.drawCardIncreasesValue)
+        
+        alert(this.facade.settings.drawCardIncreasesValue);
+
+        if(this.facade.settings.drawCardIncreasesValue == 'enabled')
             this.previousCardWasDrawCard = true;
+        
+        else if(this.facade.settings.drawCardIncreasesValue == 'disabled')
+            this.previousCardWasDrawCard = false;
+        else
+            errorMessage('Invalid card draw settings!');
     
     } else if(this.previousCardWasDrawCard) {
         this.assignDraw(currPlayer);
@@ -519,7 +533,7 @@ GameHandler.prototype.computerChooseCard = function(computerPlayer) {
     let topCard = this.facade.getTopCard();
     let nextPlayer = this.getNextPlayer(computerPlayer.id);
 
-    switch(this.settings.difficulty) {
+    switch(this.facade.settings.difficulty) {
         case 1:
             // just pick a random card
             this.computerPlaceRandomCard(computerPlayer);
@@ -599,6 +613,8 @@ GameHandler.prototype.assignTestDecks = function(deck1, deck2, topCard) {
     
     let tableDeck = new CardDeck('tableDeck', 'tDeck');
     let playerList = this.facade.getPlayerList();
+
+    console.log(playerList);
 
     playerList[0].deck.cardList = deck1.cardList;
     playerList[1].deck.cardList = deck2.cardList;
