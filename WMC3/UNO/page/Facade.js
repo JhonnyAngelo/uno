@@ -2,7 +2,8 @@ import CardDeck from './valueObjects/CardDeck.js';
 import GameSettings from './valueObjects/GameSettings.js';
 import UnoDao from './UnoDao.js';
 import History from './History.js';
-import {errorMessage} from './help.js';
+import Snapshot from './Snapshot.js';
+import {errorMessage, inArray} from './help.js';
 
 export default function Facade(baseurl) {
     this.playerList = [];
@@ -11,6 +12,8 @@ export default function Facade(baseurl) {
     this.settings = new GameSettings('enabled', 'enabled', 1);
     this.unoDao = new UnoDao(baseurl);
     this.history = new History();
+
+    this.latestSnapshot = null;
 }
 
 Facade.prototype.addPlayer = function(player) {
@@ -23,7 +26,7 @@ Facade.prototype.playerIsUser = function(id) {
 
 Facade.prototype.getUser = function() {
     for(let player of this.playerList)
-        if(player.type = 'PLAYER')
+        if(player.type == 'PLAYER' && player.name == 'user')
             return player;
 }
 
@@ -123,6 +126,7 @@ Facade.prototype.getEntryMessage = function(entry) {
 
 // -------------------------------------------- AJAX -------------------------------------------
 
+/*
 Facade.prototype.loadViewport = function(renderCallback) {
     this.unoDao.loadObjects('players', (playerList) => {
         this.playerList = [];
@@ -145,50 +149,72 @@ Facade.prototype.loadViewport = function(renderCallback) {
 
     renderCallback();
 }
+*/
 
-Facade.prototype.writePlayer = function(player, callback) {
-    this.unoDao.addObject('players', player);
-    callback();
+/* playerStats */
+Facade.prototype.loadPlayerStats = function(player) {
+    this.unoDao.load();
 }
 
-Facade.prototype.writeDeck = function(deck, callback) {
-    this.unoDao.addObject('decks', deck);
-    callback();   
+Facade.prototype.writePlayerStats = function(player) {
+    let playerStats = {
+        playerId: player.id,
+        gamesWon: player.gamesWon
+    }
+    this.unoDao.add('players', playerStats);
 }
 
-/* should I even be able to delete players or decks ? */
-Facade.prototype.deletePlayer = function(playerId, callback) {
+Facade.prototype.deletePlayerStats = function(playerId) {}
+
+
+
+/* latest snapshot */
+Facade.prototype.loadLatestSnapshot = function() {
+    this.unoDao.load('latestSnapshot/1', (snapshot) => this.latestSnapshot = snapshot);
 }
 
-Facade.prototype.deleteDeck = function(deckId, callback) {
+Facade.prototype.resumeGame = function() {
+    if(this.latestSnapshot) {
+        // copy players (separately because they contain another object (CardDeck))
+        for(let i = 0; i < this.latestSnapshot.playerList.length; i++)
+            this.playerList[i].clone(this.latestSnapshot.playerList[i]);
+
+        // copy decks on the table (separately because they contain other objects (Card))
+        this.tableDeck.clone(this.latestSnapshot.tableDeck);
+        this.availableCardsDeck.clone(this.latestSnapshot.availableCardsDeck);
+        
+        // copy players (separately because it contains other objects (Card))
+        this.history.clone(this.latestSnapshot.history);
+
+    } else {
+        errorMessage('Missing snapshot!');
+    }
+}
+
+Facade.prototype.saveSnapshot = function(stillRunning = false) {
+    if(stillRunning)
+        this.latestSnapshot = new Snapshot(stillRunning, this.playerList, this.tableDeck, this.availableCardsDeck, this.history, this.getPlayerInTurn().id);
+    else
+        this.latestSnapshot = new Snapshot();
+    
+    this.unoDao.delete('latestSnapshot', '1', (response) => { if(response == null) errorMessage('Failed to delete previous snapshot!') });
+    this.unoDao.add('latestSnapshot', this.latestSnapshot, () => console.log('[made snapshot]'));
 }
 
 
-Facade.prototype.loadHistory = function(callback) {
-}
 
-Facade.prototype.updateHistory = function(callback) {
-}
-
-Facade.prototype.clearHistory = function(entryId, callback) {
-}
-
-
+/* settings */
 Facade.prototype.saveSettings = function(callback) {
-    this.unoDao.deleteObject('settings', "1", (response) => console.log(response));
-    this.unoDao.addObject('settings', this.settings, callback);
+    this.unoDao.delete('settings', '1', (response) => console.log(response));
+    this.unoDao.add('settings', this.settings, callback);
 }
 
 Facade.prototype.loadSettings = function() {
-    this.unoDao.loadObjects('settings', (objects) => {
-        let loadedSettings = objects[0];
+    this.unoDao.load('settings/1', (loadedSettings) => {
 
-        if(loadedSettings && loadedSettings.type == 'GAME_SETTINGS') {
+        if(loadedSettings && loadedSettings.type == 'GAME_SETTINGS')
             this.settings = loadedSettings;
-            console.log(`%c[Settings] fs: ${this.settings.includeWildForcedSwap} d+: ${this.settings.drawCardIncreasesValue}`, 'color: green');
-
-        } else {
+        else
             errorMessage('Failed to load settings!');
-        }
     });
 }

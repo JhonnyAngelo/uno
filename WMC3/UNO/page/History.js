@@ -1,8 +1,9 @@
 import {errorMessage} from './help.js';
+import Card from './valueObjects/Card.js';
 
 export default function History() {
+    this.type = 'HISTORY';
     this.entryListAction = [];
-    this.entryListScreenshot = [];
 }
 
 History.prototype.addActionCardPlacement = function(player, placedCard) {
@@ -31,45 +32,20 @@ History.prototype.addActionCardDraw = function(player, drawCount) {
         errorMessage('Invalid action entry parameters!');
 }
 
-History.prototype.addScreenshot = function(players, tDeck, aDeck) {
-    let screenshot = {
-        type: 'screenshot',
-        playerList: players,
-        tableDeck: tDeck,
-        availableCardsDeck: aDeck
-    };
-
-    if(players && players.length > 2 && tDeck.type == 'CARD_DECK' && aDeck.type == 'CARD_DECK')
-        this.entryListScreenshot.push(screenshot);
-    else
-        errorMessage('Invalid screenshot parameters!');
-}
-
 History.prototype.getAction = function(index) {
     return this.entryListAction[index];
-}
-
-History.prototype.getScreenshot = function(index) {
-    return this.entryListScreenshot[index];
 }
 
 History.prototype.getAllActions = function() {
     return this.entryListAction;
 }
 
-History.prototype.getScreenshots = function() {
-    return this.entryListScreenshot;
-}
-
-History.prototype.getEntryMessage = function(entry) {
-    switch(entry.type) {
-        case 'action-place':
-            return `${entry.player} placed `;
-
-        case 'action-draw':
-            break;
+History.prototype.clone = function(history) {
+    for(let i = 0; i < history.entryListAction.length; i++) {
         
-        case 'screenshot':
-            break;
+        let entry = history.entryListAction[i];
+        this.entryListAction[i] = entry;
+        if(entry.type == 'action-place')
+            this.entryListAction[i].card = new Card(entry.card.id, entry.card.color, entry.card.symbol);
     }
 }

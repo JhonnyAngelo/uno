@@ -1,4 +1,3 @@
-import Card from './Card.js';
 import CardDeck from './CardDeck.js';
 
 export default function Player(id, name, typePC = false) {
@@ -49,16 +48,11 @@ Player.prototype.isInTurn = function() {
 }
 
 Player.prototype.swapDeck = function(player) {
-    let tempDeck = this.deck;
+    let tempCardList = this.deck.cardList;
 
     if(player.type == 'PLAYER' || player.type == 'COMPUTER_PLAYER') {
-        this.deck = player.deck;
-        player.deck = tempDeck;
-
-        this.deck.id = this.id;
-        this.deck.name = `${this.id}'s card deck`;
-        player.deck.id = player.id;
-        player.deck.name = `${player.id}'s card deck`;
+        this.deck.cardList = player.deck.cardList;
+        player.deck.cardList = tempCardList;
     }
 }
 
@@ -73,4 +67,12 @@ Player.prototype.canPutDraw2Card = function() {
 
 Player.prototype.canPutDraw4Card = function() {
     return this.deck.findCardBySymbol('wild_draw_4') != -1;
+}
+
+Player.prototype.clone = function(player) {
+    for(let key in player)
+        if(key != 'deck')
+            this[key] = player[key];
+
+    this.deck.clone(player.deck);
 }

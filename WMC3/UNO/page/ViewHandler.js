@@ -29,7 +29,7 @@ export default function ViewHandler(facade, spritesLocation, viewportId, tableId
             
             this.renderAll();
 
-        }, 10);
+        }, 20);
     }
 
     this.setCallBacks = function() {
@@ -75,13 +75,19 @@ export default function ViewHandler(facade, spritesLocation, viewportId, tableId
     }
 
     ViewHandler.prototype.loadFacade = function() {
-        this.facade.loadSettings();
+        let loadFunctions = [
+            () => this.facade.loadSettings(),
+            () => this.facade.loadLatestSnapshot()
+        ];
+
+        console.log('[loading game data...]');
+
+        for(let i = 0; i < loadFunctions.length; i++) {
+            setTimeout(loadFunctions[i](), i * 10);
+        }
     }
 
     ViewHandler.prototype.renderAll = function() {
-
-        console.log(`%c[Settings] fs: ${this.facade.settings.includeWildForcedSwap} d+: ${this.facade.settings.drawCardIncreasesValue}`, 'color: green');
-
         console.log('[rendering viewport]');
         
         this.clearViewport();
@@ -285,9 +291,10 @@ export default function ViewHandler(facade, spritesLocation, viewportId, tableId
 
         // you need to shout UNO if you are about to place your second to last card
         // or you are about to swap decks with a player who has only 1 card
+
         if(user.getCardCount() == 2 ||
-        (user.deck.findCardBySymbol('wild_forced_swap') && this.gameHandler.getNextPlayer(user.id).getCardCount() == 1) ) {
-            
+        (user.deck.findCardBySymbol('wild_forced_swap') != -1 && this.gameHandler.getNextPlayer(user.id).getCardCount() == 1) ) {
+
             // button can only be clicked once and if you can place your second to last card
             if(!user.stateShoutedUno && user.stateInTurn && this.gameHandler.recommendCard(user) != null) {
                 unoBtn.src = `${this.spritesLocation}/unoBtn_active.gif`;
@@ -406,7 +413,10 @@ export default function ViewHandler(facade, spritesLocation, viewportId, tableId
 
             if(this.facade.getPlayerByIndex(0).isInTurn()) {
                 let player = this.facade.getPlayerInTurn();
-                this.gameHandler.optionalDraw(player);
+                if(this.gameHandler.optionalDraw(player) == false) {
+                   this.drawButtonEl.classList.add('shake');
+                   setTimeout(() => this.drawButtonEl.classList.remove('shake'), 550);
+                }
             }
         };
 
@@ -528,24 +538,11 @@ export default function ViewHandler(facade, spritesLocation, viewportId, tableId
         continueBtn.onmouseleave = () => {
             continueBtn.src = `${this.spritesLocation}/continueBtn.png`;
         }
-        /*
-        let saveSettingsBtn = document.createElement('img');
-        saveSettingsBtn.id = 'saveSettingsBtn';
-        saveSettingsBtn.alt = 'save settings';
-        saveSettingsBtn.src = `${this.spritesLocation}/saveSettingsBtn.png`;
 
-        saveSettingsBtn.onmouseenter = () => {
-            saveSettingsBtn.src = `${this.spritesLocation}/saveSettingsBtn_hover.png`;
-        }
-        saveSettingsBtn.onmouseleave = () => {
-            saveSettingsBtn.src = `${this.spritesLocation}/saveSettingsBtn.png`;
-        }
-        */
         let btnContainer = document.getElementById('pauseScreenButtons');
 
         btnContainer.append(restartBtn);
         btnContainer.append(continueBtn);
-        //btnContainer.append(saveSettingsBtn);
 
         restartBtn.onclick = () => {
             
@@ -572,20 +569,15 @@ export default function ViewHandler(facade, spritesLocation, viewportId, tableId
                 this.gameHandler.continueGame(false);
             }
         };
-        /*
-        saveSettingsBtn.onclick = () => {
-            console.log('[saved settings]');
-        };
-        */
     }
 
     ViewHandler.prototype.startDeckSwapAnimation = function() {
         let user = this.facade.getPlayerByIndex(0);
         let cardCount = user.getCardCount();
-        let animationDuration = cardCount*500 + cardCount/2 * (50*1 + 50*cardCount); // using sum of arithmetic sequence formula
 
         this.gameHandler.stopGame();
 
+        /*
         // start animation for pc avatar
         let playerInTurn = this.gameHandler.playerInTurn;
         if(playerInTurn && playerInTurn.type == 'COMPUTER_PLAYER') {
@@ -593,6 +585,7 @@ export default function ViewHandler(facade, spritesLocation, viewportId, tableId
         } else {
             // other animation
         }
+        */
 
         for(let i = 0; i < cardCount; i++) {
             let card = user.deck.cardList[i];
@@ -615,8 +608,6 @@ export default function ViewHandler(facade, spritesLocation, viewportId, tableId
             
             }, 50 * (i+1));
         }
-
-        return animationDuration;
     }
 
     ViewHandler.prototype.selectColor = function() {

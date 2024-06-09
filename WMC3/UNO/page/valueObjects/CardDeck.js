@@ -1,4 +1,5 @@
-import {errorMessage, durstenfeldShuffle} from '../help.js';
+import {errorMessage, durstenfeldShuffle, getRandomInt} from '../help.js';
+import Card from './Card.js';
 
 export default function CardDeck(name, id) {
     this.type = 'CARD_DECK';
@@ -122,4 +123,15 @@ CardDeck.prototype.findCardBySymbol = function(symbol) {
         }
     }
     return -1;
+}
+
+CardDeck.prototype.clone = function(deck) {
+    for(let key in deck)
+        if(key != 'cardList')
+            this[key] = deck[key];
+
+    for(let i = 0; i < deck.cardList.length; i++) {
+        let card2 = deck.cardList[i];
+        this.cardList[i] = new Card(card2.id, card2.color, card2.symbol);
+    }
 }

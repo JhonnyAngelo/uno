@@ -42,12 +42,32 @@ GameHandler.prototype.startGame = function(...players) {
         for(let player of players) {
             this.addPlayer(player);
         }
-        this.assignDecks(this.generateGlobalCardDeck());
 
-        let user = this.facade.getPlayerByIndex(0);
-        user.stateInTurn = true;
-        this.playerInTurn = user;
-        this.countInactivity();
+        // check if there is a game that was interrupted earlier
+        if(this.facade.latestSnapshot && this.facade.latestSnapshot.gameRunning == true && confirm('Do you want to resume your previous game?')) {
+            
+            this.facade.resumeGame();
+
+            this.facade.getPlayer(this.facade.latestSnapshot.playerInTurnId).stateInTurn = true;
+
+            let playerInTurn = this.facade.getPlayerInTurn();
+            if(this.facade.playerIsUser(playerInTurn.id)) {
+                this.countInactivity();
+            
+            } else if(playerInTurn.type == 'COMPUTER_PLAYER') {
+                this.renderCallback();
+                this.computerStart(playerInTurn);
+            }
+
+        } else {
+            this.facade.saveSnapshot(false);
+            this.assignDecks(this.generateGlobalCardDeck());
+
+            let user = this.facade.getPlayerByIndex(0);
+            user.stateInTurn = true;
+            this.playerInTurn = user;
+            this.countInactivity();
+        }
     
     } else {
         errorMessage('There must be at least 2 players!')
@@ -71,12 +91,16 @@ GameHandler.prototype.continueGame = function(moveTurn) {
     this.gameStopped = false;
     console.log('\x1b[36m%s\x1b[0m', '[game continued]');
 
-    if(moveTurn == false)
+    if(moveTurn == false) {
         this.playerInTurn.stateInTurn = true;
-    else if(moveTurn)
+
+    } else if(moveTurn) {
         this.moveTurn(this.playerInTurn);
-    else
+        this.facade.saveSnapshot(true);
+
+    } else {
         errorMessage('Missing parameter moveTurn in continueGame()!');
+    }
 }
 
 GameHandler.prototype.addPlayer = function(player) {
@@ -92,8 +116,6 @@ GameHandler.prototype.generateGlobalCardDeck = function() {
     let colorList = ['red', 'blue', 'green', 'yellow', 'black'];
     let symbolList = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'draw_2', 'reverse', 'skip', 'wild', 'wild_draw_4', 'wild_forced_swap'];
     let id = 1;
-
-    let forcedSwapDisabled = this.facade.settings.includeWildForcedSwap == 'disabled';
 
     // red, blue, green , yellow - 4 main colors with 25 cards each
     for(let color = 0; color < 4; color++) {
@@ -121,9 +143,9 @@ GameHandler.prototype.generateGlobalCardDeck = function() {
         }
     }
 
-    printCards(globalCardDeck.getAllCards());
+    //printCards(globalCardDeck.getAllCards());
     globalCardDeck.shuffle();
-    printCards(globalCardDeck.getAllCards());
+    //printCards(globalCardDeck.getAllCards());
 
     return globalCardDeck;
 }
@@ -183,7 +205,10 @@ GameHandler.prototype.makeTurn = function(playerId, cardId) {
         this.checkSpecialCard(card, playerId);
         this.determineEnd();
         this.moveTurn(player);
-
+        
+        if(this.facade.getPlayerInTurn())
+            this.facade.saveSnapshot(true);
+        
         return true;
     
     } else if(this.validCard(card) == false) {
@@ -237,6 +262,8 @@ GameHandler.prototype.determineEnd = function() {
     for(let player of this.facade.getPlayerList()) {
         if(player.hasNoCard()) {
             
+            this.facade.saveSnapshot(false);
+
             if(player.type == 'COMPUTER_PLAYER')
                 this.avatarWonCallback();
 
@@ -337,11 +364,13 @@ GameHandler.prototype.optionalDraw = function(player) {
             this.moveTurn(player);
         }
 
+        return assignedCard;
+
     } else {
         errorMessage(`You can't draw a card now, ${player.name}!`);
     }
 
-    return assignedCard;
+    return false;
 }
 
 GameHandler.prototype.getNextPlayer = function(currPlayerId, considerStateSkipped = true) {
@@ -409,8 +438,8 @@ GameHandler.prototype.checkSpecialCard = function(card, currPlayerId) {
     specialCards['wild'] = () => this.wild(currPlayerId);
     specialCards['wild_draw_4'] = () => { this.wild(currPlayerId); this.increaseDrawCount(4);}
     specialCards['wild_forced_swap'] = () => {   
-        let animationDuration = this.forceASwap(currPlayerId);
-        setTimeout(() => this.wild(currPlayerId), 500);
+        this.forceASwap(currPlayerId);
+        setTimeout(() => this.wild(currPlayerId), 1000);
     }
 
     if(inArray(card.symbol, ['draw_2', 'reverse', 'skip', 'wild', 'wild_draw_4', 'wild_forced_swap'])) {
@@ -418,8 +447,6 @@ GameHandler.prototype.checkSpecialCard = function(card, currPlayerId) {
     }
 
     if(inArray(card.symbol, ['draw_2', 'wild_draw_4'])) {
-        
-        alert(this.facade.settings.drawCardIncreasesValue);
 
         if(this.facade.settings.drawCardIncreasesValue == 'enabled')
             this.previousCardWasDrawCard = true;
@@ -507,7 +534,7 @@ GameHandler.prototype.countInactivity = function() {
             clearInterval(increaseInactiveness);
         
         if(inactiveUserTime == 4) {
-            console.log("[You're in turn, user!]");
+            console.log("You're in turn, user!");
             this.reminderCallback(false);
             clearInterval(increaseInactiveness);
         } else {
@@ -613,8 +640,6 @@ GameHandler.prototype.assignTestDecks = function(deck1, deck2, topCard) {
     
     let tableDeck = new CardDeck('tableDeck', 'tDeck');
     let playerList = this.facade.getPlayerList();
-
-    console.log(playerList);
 
     playerList[0].deck.cardList = deck1.cardList;
     playerList[1].deck.cardList = deck2.cardList;

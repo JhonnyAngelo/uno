@@ -1,11 +1,938 @@
 {
+  "players": [
+    {
+      "id": "8848"
+    }
+  ],
   "settings": [
     {
       "id": "1",
       "type": "GAME_SETTINGS",
-      "includeWildForcedSwap": "disabled",
+      "includeWildForcedSwap": "enabled",
       "drawCardIncreasesValue": "enabled",
       "difficulty": 1
+    }
+  ],
+  "latestSnapshot": [
+    {
+      "id": "1",
+      "gameRunning": true,
+      "playerList": [
+        {
+          "type": "PLAYER",
+          "id": "p1",
+          "name": "user",
+          "deck": {
+            "type": "CARD_DECK",
+            "id": "p1",
+            "name": "p1's card deck",
+            "cardList": [
+              {
+                "id": "test01",
+                "valid": true,
+                "color": "blue",
+                "symbol": "0",
+                "description": "An ordinary UNO card.\n\n\n                                You can only put a card with the number 0, the color blue or a Wild card."
+              },
+              {
+                "id": "test03",
+                "valid": true,
+                "color": "green",
+                "symbol": "1",
+                "description": "An ordinary UNO card.\n\n\n                                You can only put a card with the number 1, the color green or a Wild card."
+              },
+              {
+                "id": "test04",
+                "valid": true,
+                "color": "green",
+                "symbol": "1",
+                "description": "An ordinary UNO card.\n\n\n                                You can only put a card with the number 1, the color green or a Wild card."
+              },
+              {
+                "id": "test05",
+                "valid": true,
+                "color": "blue",
+                "symbol": "draw_2",
+                "description": "The next player has to draw 2 cards from the deck,\n\n                                unless, he puts another \"Draw 2\" or a \"Wild Draw 4\".\n\n\n                                In that case, the number of cards that has to be drawn increases for the subsequent player and so on..."
+              },
+              {
+                "id": "test06",
+                "valid": true,
+                "color": "blue",
+                "symbol": "draw_2",
+                "description": "The next player has to draw 2 cards from the deck,\n\n                                unless, he puts another \"Draw 2\" or a \"Wild Draw 4\".\n\n\n                                In that case, the number of cards that has to be drawn increases for the subsequent player and so on..."
+              },
+              {
+                "id": "testFS_User",
+                "valid": true,
+                "color": "black",
+                "symbol": "wild_forced_swap",
+                "chosenColor": null,
+                "description": "If placed, the player is forced to choose another person to swap cards with.\n\n\n                                He also determines the color which becomes mandatory for the next player, unless, he has another Wild card."
+              }
+            ]
+          },
+          "stateWon": false,
+          "stateInTurn": true,
+          "stateSkipped": false,
+          "optionalDrawPossible": true,
+          "stateShoutedUno": false,
+          "gamesWon": 0
+        },
+        {
+          "type": "COMPUTER_PLAYER",
+          "id": "p2",
+          "name": "pc",
+          "deck": {
+            "type": "CARD_DECK",
+            "id": "p2",
+            "name": "p2's card deck",
+            "cardList": [
+              {
+                "id": "test08",
+                "valid": true,
+                "color": "blue",
+                "symbol": "1",
+                "description": "An ordinary UNO card.\n\n\n                                You can only put a card with the number 1, the color blue or a Wild card."
+              }
+            ]
+          },
+          "stateWon": false,
+          "stateInTurn": false,
+          "stateSkipped": false,
+          "optionalDrawPossible": true,
+          "stateShoutedUno": false,
+          "gamesWon": 0
+        }
+      ],
+      "tableDeck": {
+        "type": "CARD_DECK",
+        "id": "tDeck",
+        "name": "tableDeck",
+        "cardList": [
+          {
+            "id": "top",
+            "valid": true,
+            "color": "blue",
+            "symbol": "1",
+            "description": "An ordinary UNO card.\n\n\n                                You can only put a card with the number 1, the color blue or a Wild card."
+          },
+          {
+            "id": "test02",
+            "valid": true,
+            "color": "blue",
+            "symbol": "1",
+            "description": "An ordinary UNO card.\n\n\n                                You can only put a card with the number 1, the color blue or a Wild card."
+          },
+          {
+            "id": "test07",
+            "valid": true,
+            "color": "blue",
+            "symbol": "0",
+            "description": "An ordinary UNO card.\n\n\n                                You can only put a card with the number 0, the color blue or a Wild card."
+          }
+        ]
+      },
+      "availableCardsDeck": {
+        "type": "CARD_DECK",
+        "id": "aDeck",
+        "name": "availableCardsDeck",
+        "cardList": [
+          {
+            "id": "card112",
+            "valid": true,
+            "color": "black",
+            "symbol": "wild_forced_swap",
+            "chosenColor": null,
+            "description": "If placed, the player is forced to choose another person to swap cards with.\n\n\n                                He also determines the color which becomes mandatory for the next player, unless, he has another Wild card."
+          },
+          {
+            "id": "card111",
+            "valid": true,
+            "color": "black",
+            "symbol": "wild_forced_swap",
+            "chosenColor": null,
+            "description": "If placed, the player is forced to choose another person to swap cards with.\n\n\n                                He also determines the color which becomes mandatory for the next player, unless, he has another Wild card."
+          },
+          {
+            "id": "card32",
+            "valid": true,
+            "color": "blue",
+            "symbol": "3",
+            "description": "An ordinary UNO card.\n\n\n                                You can only put a card with the number 3, the color blue or a Wild card."
+          },
+          {
+            "id": "card8",
+            "valid": true,
+            "color": "red",
+            "symbol": "4",
+            "description": "An ordinary UNO card.\n\n\n                                You can only put a card with the number 4, the color red or a Wild card."
+          },
+          {
+            "id": "card42",
+            "valid": true,
+            "color": "blue",
+            "symbol": "8",
+            "description": "An ordinary UNO card.\n\n\n                                You can only put a card with the number 8, the color blue or a Wild card."
+          },
+          {
+            "id": "card5",
+            "valid": true,
+            "color": "red",
+            "symbol": "2",
+            "description": "An ordinary UNO card.\n\n\n                                You can only put a card with the number 2, the color red or a Wild card."
+          },
+          {
+            "id": "card87",
+            "valid": true,
+            "color": "yellow",
+            "symbol": "6",
+            "description": "An ordinary UNO card.\n\n\n                                You can only put a card with the number 6, the color yellow or a Wild card."
+          },
+          {
+            "id": "card43",
+            "valid": true,
+            "color": "blue",
+            "symbol": "9",
+            "description": "An ordinary UNO card.\n\n\n                                You can only put a card with the number 9, the color blue or a Wild card."
+          },
+          {
+            "id": "card78",
+            "valid": true,
+            "color": "yellow",
+            "symbol": "1",
+            "description": "An ordinary UNO card.\n\n\n                                You can only put a card with the number 1, the color yellow or a Wild card."
+          },
+          {
+            "id": "card26",
+            "valid": true,
+            "color": "blue",
+            "symbol": "0",
+            "description": "An ordinary UNO card.\n\n\n                                You can only put a card with the number 0, the color blue or a Wild card."
+          },
+          {
+            "id": "card13",
+            "valid": true,
+            "color": "red",
+            "symbol": "6",
+            "description": "An ordinary UNO card.\n\n\n                                You can only put a card with the number 6, the color red or a Wild card."
+          },
+          {
+            "id": "card54",
+            "valid": true,
+            "color": "green",
+            "symbol": "2",
+            "description": "An ordinary UNO card.\n\n\n                                You can only put a card with the number 2, the color green or a Wild card."
+          },
+          {
+            "id": "card60",
+            "valid": true,
+            "color": "green",
+            "symbol": "5",
+            "description": "An ordinary UNO card.\n\n\n                                You can only put a card with the number 5, the color green or a Wild card."
+          },
+          {
+            "id": "card12",
+            "valid": true,
+            "color": "red",
+            "symbol": "6",
+            "description": "An ordinary UNO card.\n\n\n                                You can only put a card with the number 6, the color red or a Wild card."
+          },
+          {
+            "id": "card20",
+            "valid": true,
+            "color": "red",
+            "symbol": "draw_2",
+            "description": "The next player has to draw 2 cards from the deck,\n\n                                unless, he puts another \"Draw 2\" or a \"Wild Draw 4\".\n\n\n                                In that case, the number of cards that has to be drawn increases for the subsequent player and so on..."
+          },
+          {
+            "id": "card2",
+            "valid": true,
+            "color": "red",
+            "symbol": "1",
+            "description": "An ordinary UNO card.\n\n\n                                You can only put a card with the number 1, the color red or a Wild card."
+          },
+          {
+            "id": "card101",
+            "valid": true,
+            "color": "black",
+            "symbol": "wild",
+            "chosenColor": null,
+            "description": "The player with this card can choose a color which becomes mandatory for the next player, unless, he has another Wild card."
+          },
+          {
+            "id": "card108",
+            "valid": true,
+            "color": "black",
+            "symbol": "wild_draw_4",
+            "chosenColor": null,
+            "description": "The next player has to draw 4 cards from the deck, unless, he puts another \"Wild Draw 4\".\n\n                                In that case, the number of cards that has to be drawn increases for the subsequent player and so on...\n\n\n                                The last player in row to place this card determines the color for the next player, unless, he has another Wild card."
+          },
+          {
+            "id": "card62",
+            "valid": true,
+            "color": "green",
+            "symbol": "6",
+            "description": "An ordinary UNO card.\n\n\n                                You can only put a card with the number 6, the color green or a Wild card."
+          },
+          {
+            "id": "card22",
+            "valid": true,
+            "color": "red",
+            "symbol": "reverse",
+            "description": "This card reverses the direction of gameplay.\n\n                                If your game was going clockwise, the Reverse card would make it counterclockwise.\n\n\n                                You can only put another Reverse card, one with the color red or a Wild card."
+          },
+          {
+            "id": "card66",
+            "valid": true,
+            "color": "green",
+            "symbol": "8",
+            "description": "An ordinary UNO card.\n\n\n                                You can only put a card with the number 8, the color green or a Wild card."
+          },
+          {
+            "id": "card75",
+            "valid": true,
+            "color": "green",
+            "symbol": "skip",
+            "description": "This card skips the following player's turn.\n\n\n                                You can only put another Reverse card, one with the color green or a Wild card."
+          },
+          {
+            "id": "card38",
+            "valid": true,
+            "color": "blue",
+            "symbol": "6",
+            "description": "An ordinary UNO card.\n\n\n                                You can only put a card with the number 6, the color blue or a Wild card."
+          },
+          {
+            "id": "card89",
+            "valid": true,
+            "color": "yellow",
+            "symbol": "7",
+            "description": "An ordinary UNO card.\n\n\n                                You can only put a card with the number 7, the color yellow or a Wild card."
+          },
+          {
+            "id": "card81",
+            "valid": true,
+            "color": "yellow",
+            "symbol": "3",
+            "description": "An ordinary UNO card.\n\n\n                                You can only put a card with the number 3, the color yellow or a Wild card."
+          },
+          {
+            "id": "card64",
+            "valid": true,
+            "color": "green",
+            "symbol": "7",
+            "description": "An ordinary UNO card.\n\n\n                                You can only put a card with the number 7, the color green or a Wild card."
+          },
+          {
+            "id": "card57",
+            "valid": true,
+            "color": "green",
+            "symbol": "3",
+            "description": "An ordinary UNO card.\n\n\n                                You can only put a card with the number 3, the color green or a Wild card."
+          },
+          {
+            "id": "card94",
+            "valid": true,
+            "color": "yellow",
+            "symbol": "9",
+            "description": "An ordinary UNO card.\n\n\n                                You can only put a card with the number 9, the color yellow or a Wild card."
+          },
+          {
+            "id": "card31",
+            "valid": true,
+            "color": "blue",
+            "symbol": "3",
+            "description": "An ordinary UNO card.\n\n\n                                You can only put a card with the number 3, the color blue or a Wild card."
+          },
+          {
+            "id": "card19",
+            "valid": true,
+            "color": "red",
+            "symbol": "9",
+            "description": "An ordinary UNO card.\n\n\n                                You can only put a card with the number 9, the color red or a Wild card."
+          },
+          {
+            "id": "card50",
+            "valid": true,
+            "color": "blue",
+            "symbol": "skip",
+            "description": "This card skips the following player's turn.\n\n\n                                You can only put another Reverse card, one with the color blue or a Wild card."
+          },
+          {
+            "id": "card59",
+            "valid": true,
+            "color": "green",
+            "symbol": "4",
+            "description": "An ordinary UNO card.\n\n\n                                You can only put a card with the number 4, the color green or a Wild card."
+          },
+          {
+            "id": "card79",
+            "valid": true,
+            "color": "yellow",
+            "symbol": "2",
+            "description": "An ordinary UNO card.\n\n\n                                You can only put a card with the number 2, the color yellow or a Wild card."
+          },
+          {
+            "id": "card29",
+            "valid": true,
+            "color": "blue",
+            "symbol": "2",
+            "description": "An ordinary UNO card.\n\n\n                                You can only put a card with the number 2, the color blue or a Wild card."
+          },
+          {
+            "id": "card10",
+            "valid": true,
+            "color": "red",
+            "symbol": "5",
+            "description": "An ordinary UNO card.\n\n\n                                You can only put a card with the number 5, the color red or a Wild card."
+          },
+          {
+            "id": "card44",
+            "valid": true,
+            "color": "blue",
+            "symbol": "9",
+            "description": "An ordinary UNO card.\n\n\n                                You can only put a card with the number 9, the color blue or a Wild card."
+          },
+          {
+            "id": "card85",
+            "valid": true,
+            "color": "yellow",
+            "symbol": "5",
+            "description": "An ordinary UNO card.\n\n\n                                You can only put a card with the number 5, the color yellow or a Wild card."
+          },
+          {
+            "id": "card80",
+            "valid": true,
+            "color": "yellow",
+            "symbol": "2",
+            "description": "An ordinary UNO card.\n\n\n                                You can only put a card with the number 2, the color yellow or a Wild card."
+          },
+          {
+            "id": "card14",
+            "valid": true,
+            "color": "red",
+            "symbol": "7",
+            "description": "An ordinary UNO card.\n\n\n                                You can only put a card with the number 7, the color red or a Wild card."
+          },
+          {
+            "id": "card41",
+            "valid": true,
+            "color": "blue",
+            "symbol": "8",
+            "description": "An ordinary UNO card.\n\n\n                                You can only put a card with the number 8, the color blue or a Wild card."
+          },
+          {
+            "id": "card65",
+            "valid": true,
+            "color": "green",
+            "symbol": "7",
+            "description": "An ordinary UNO card.\n\n\n                                You can only put a card with the number 7, the color green or a Wild card."
+          },
+          {
+            "id": "card23",
+            "valid": true,
+            "color": "red",
+            "symbol": "reverse",
+            "description": "This card reverses the direction of gameplay.\n\n                                If your game was going clockwise, the Reverse card would make it counterclockwise.\n\n\n                                You can only put another Reverse card, one with the color red or a Wild card."
+          },
+          {
+            "id": "card11",
+            "valid": true,
+            "color": "red",
+            "symbol": "5",
+            "description": "An ordinary UNO card.\n\n\n                                You can only put a card with the number 5, the color red or a Wild card."
+          },
+          {
+            "id": "card100",
+            "valid": true,
+            "color": "yellow",
+            "symbol": "skip",
+            "description": "This card skips the following player's turn.\n\n\n                                You can only put another Reverse card, one with the color yellow or a Wild card."
+          },
+          {
+            "id": "card67",
+            "valid": true,
+            "color": "green",
+            "symbol": "8",
+            "description": "An ordinary UNO card.\n\n\n                                You can only put a card with the number 8, the color green or a Wild card."
+          },
+          {
+            "id": "card90",
+            "valid": true,
+            "color": "yellow",
+            "symbol": "7",
+            "description": "An ordinary UNO card.\n\n\n                                You can only put a card with the number 7, the color yellow or a Wild card."
+          },
+          {
+            "id": "card15",
+            "valid": true,
+            "color": "red",
+            "symbol": "7",
+            "description": "An ordinary UNO card.\n\n\n                                You can only put a card with the number 7, the color red or a Wild card."
+          },
+          {
+            "id": "card18",
+            "valid": true,
+            "color": "red",
+            "symbol": "9",
+            "description": "An ordinary UNO card.\n\n\n                                You can only put a card with the number 9, the color red or a Wild card."
+          },
+          {
+            "id": "card68",
+            "valid": true,
+            "color": "green",
+            "symbol": "9",
+            "description": "An ordinary UNO card.\n\n\n                                You can only put a card with the number 9, the color green or a Wild card."
+          },
+          {
+            "id": "card106",
+            "valid": true,
+            "color": "black",
+            "symbol": "wild_draw_4",
+            "chosenColor": null,
+            "description": "The next player has to draw 4 cards from the deck, unless, he puts another \"Wild Draw 4\".\n\n                                In that case, the number of cards that has to be drawn increases for the subsequent player and so on...\n\n\n                                The last player in row to place this card determines the color for the next player, unless, he has another Wild card."
+          },
+          {
+            "id": "card88",
+            "valid": true,
+            "color": "yellow",
+            "symbol": "6",
+            "description": "An ordinary UNO card.\n\n\n                                You can only put a card with the number 6, the color yellow or a Wild card."
+          },
+          {
+            "id": "card110",
+            "valid": true,
+            "color": "black",
+            "symbol": "wild_forced_swap",
+            "chosenColor": null,
+            "description": "If placed, the player is forced to choose another person to swap cards with.\n\n\n                                He also determines the color which becomes mandatory for the next player, unless, he has another Wild card."
+          },
+          {
+            "id": "card46",
+            "valid": true,
+            "color": "blue",
+            "symbol": "draw_2",
+            "description": "The next player has to draw 2 cards from the deck,\n\n                                unless, he puts another \"Draw 2\" or a \"Wild Draw 4\".\n\n\n                                In that case, the number of cards that has to be drawn increases for the subsequent player and so on..."
+          },
+          {
+            "id": "card99",
+            "valid": true,
+            "color": "yellow",
+            "symbol": "skip",
+            "description": "This card skips the following player's turn.\n\n\n                                You can only put another Reverse card, one with the color yellow or a Wild card."
+          },
+          {
+            "id": "card28",
+            "valid": true,
+            "color": "blue",
+            "symbol": "1",
+            "description": "An ordinary UNO card.\n\n\n                                You can only put a card with the number 1, the color blue or a Wild card."
+          },
+          {
+            "id": "card72",
+            "valid": true,
+            "color": "green",
+            "symbol": "reverse",
+            "description": "This card reverses the direction of gameplay.\n\n                                If your game was going clockwise, the Reverse card would make it counterclockwise.\n\n\n                                You can only put another Reverse card, one with the color green or a Wild card."
+          },
+          {
+            "id": "card45",
+            "valid": true,
+            "color": "blue",
+            "symbol": "draw_2",
+            "description": "The next player has to draw 2 cards from the deck,\n\n                                unless, he puts another \"Draw 2\" or a \"Wild Draw 4\".\n\n\n                                In that case, the number of cards that has to be drawn increases for the subsequent player and so on..."
+          },
+          {
+            "id": "card25",
+            "valid": true,
+            "color": "red",
+            "symbol": "skip",
+            "description": "This card skips the following player's turn.\n\n\n                                You can only put another Reverse card, one with the color red or a Wild card."
+          },
+          {
+            "id": "card52",
+            "valid": true,
+            "color": "green",
+            "symbol": "1",
+            "description": "An ordinary UNO card.\n\n\n                                You can only put a card with the number 1, the color green or a Wild card."
+          },
+          {
+            "id": "card76",
+            "valid": true,
+            "color": "yellow",
+            "symbol": "0",
+            "description": "An ordinary UNO card.\n\n\n                                You can only put a card with the number 0, the color yellow or a Wild card."
+          },
+          {
+            "id": "card30",
+            "valid": true,
+            "color": "blue",
+            "symbol": "2",
+            "description": "An ordinary UNO card.\n\n\n                                You can only put a card with the number 2, the color blue or a Wild card."
+          },
+          {
+            "id": "card91",
+            "valid": true,
+            "color": "yellow",
+            "symbol": "8",
+            "description": "An ordinary UNO card.\n\n\n                                You can only put a card with the number 8, the color yellow or a Wild card."
+          },
+          {
+            "id": "card84",
+            "valid": true,
+            "color": "yellow",
+            "symbol": "4",
+            "description": "An ordinary UNO card.\n\n\n                                You can only put a card with the number 4, the color yellow or a Wild card."
+          },
+          {
+            "id": "card74",
+            "valid": true,
+            "color": "green",
+            "symbol": "skip",
+            "description": "This card skips the following player's turn.\n\n\n                                You can only put another Reverse card, one with the color green or a Wild card."
+          },
+          {
+            "id": "card86",
+            "valid": true,
+            "color": "yellow",
+            "symbol": "5",
+            "description": "An ordinary UNO card.\n\n\n                                You can only put a card with the number 5, the color yellow or a Wild card."
+          },
+          {
+            "id": "card34",
+            "valid": true,
+            "color": "blue",
+            "symbol": "4",
+            "description": "An ordinary UNO card.\n\n\n                                You can only put a card with the number 4, the color blue or a Wild card."
+          },
+          {
+            "id": "card97",
+            "valid": true,
+            "color": "yellow",
+            "symbol": "reverse",
+            "description": "This card reverses the direction of gameplay.\n\n                                If your game was going clockwise, the Reverse card would make it counterclockwise.\n\n\n                                You can only put another Reverse card, one with the color yellow or a Wild card."
+          },
+          {
+            "id": "card47",
+            "valid": true,
+            "color": "blue",
+            "symbol": "reverse",
+            "description": "This card reverses the direction of gameplay.\n\n                                If your game was going clockwise, the Reverse card would make it counterclockwise.\n\n\n                                You can only put another Reverse card, one with the color blue or a Wild card."
+          },
+          {
+            "id": "card55",
+            "valid": true,
+            "color": "green",
+            "symbol": "2",
+            "description": "An ordinary UNO card.\n\n\n                                You can only put a card with the number 2, the color green or a Wild card."
+          },
+          {
+            "id": "card36",
+            "valid": true,
+            "color": "blue",
+            "symbol": "5",
+            "description": "An ordinary UNO card.\n\n\n                                You can only put a card with the number 5, the color blue or a Wild card."
+          },
+          {
+            "id": "card104",
+            "valid": true,
+            "color": "black",
+            "symbol": "wild",
+            "chosenColor": null,
+            "description": "The player with this card can choose a color which becomes mandatory for the next player, unless, he has another Wild card."
+          },
+          {
+            "id": "card3",
+            "valid": true,
+            "color": "red",
+            "symbol": "1",
+            "description": "An ordinary UNO card.\n\n\n                                You can only put a card with the number 1, the color red or a Wild card."
+          },
+          {
+            "id": "card4",
+            "valid": true,
+            "color": "red",
+            "symbol": "2",
+            "description": "An ordinary UNO card.\n\n\n                                You can only put a card with the number 2, the color red or a Wild card."
+          },
+          {
+            "id": "card95",
+            "valid": true,
+            "color": "yellow",
+            "symbol": "draw_2",
+            "description": "The next player has to draw 2 cards from the deck,\n\n                                unless, he puts another \"Draw 2\" or a \"Wild Draw 4\".\n\n\n                                In that case, the number of cards that has to be drawn increases for the subsequent player and so on..."
+          },
+          {
+            "id": "card77",
+            "valid": true,
+            "color": "yellow",
+            "symbol": "1",
+            "description": "An ordinary UNO card.\n\n\n                                You can only put a card with the number 1, the color yellow or a Wild card."
+          },
+          {
+            "id": "card109",
+            "valid": true,
+            "color": "black",
+            "symbol": "wild_forced_swap",
+            "chosenColor": null,
+            "description": "If placed, the player is forced to choose another person to swap cards with.\n\n\n                                He also determines the color which becomes mandatory for the next player, unless, he has another Wild card."
+          },
+          {
+            "id": "card16",
+            "valid": true,
+            "color": "red",
+            "symbol": "8",
+            "description": "An ordinary UNO card.\n\n\n                                You can only put a card with the number 8, the color red or a Wild card."
+          },
+          {
+            "id": "card70",
+            "valid": true,
+            "color": "green",
+            "symbol": "draw_2",
+            "description": "The next player has to draw 2 cards from the deck,\n\n                                unless, he puts another \"Draw 2\" or a \"Wild Draw 4\".\n\n\n                                In that case, the number of cards that has to be drawn increases for the subsequent player and so on..."
+          },
+          {
+            "id": "card27",
+            "valid": true,
+            "color": "blue",
+            "symbol": "1",
+            "description": "An ordinary UNO card.\n\n\n                                You can only put a card with the number 1, the color blue or a Wild card."
+          },
+          {
+            "id": "card83",
+            "valid": true,
+            "color": "yellow",
+            "symbol": "4",
+            "description": "An ordinary UNO card.\n\n\n                                You can only put a card with the number 4, the color yellow or a Wild card."
+          },
+          {
+            "id": "card33",
+            "valid": true,
+            "color": "blue",
+            "symbol": "4",
+            "description": "An ordinary UNO card.\n\n\n                                You can only put a card with the number 4, the color blue or a Wild card."
+          },
+          {
+            "id": "card71",
+            "valid": true,
+            "color": "green",
+            "symbol": "draw_2",
+            "description": "The next player has to draw 2 cards from the deck,\n\n                                unless, he puts another \"Draw 2\" or a \"Wild Draw 4\".\n\n\n                                In that case, the number of cards that has to be drawn increases for the subsequent player and so on..."
+          },
+          {
+            "id": "card40",
+            "valid": true,
+            "color": "blue",
+            "symbol": "7",
+            "description": "An ordinary UNO card.\n\n\n                                You can only put a card with the number 7, the color blue or a Wild card."
+          },
+          {
+            "id": "card39",
+            "valid": true,
+            "color": "blue",
+            "symbol": "7",
+            "description": "An ordinary UNO card.\n\n\n                                You can only put a card with the number 7, the color blue or a Wild card."
+          },
+          {
+            "id": "card48",
+            "valid": true,
+            "color": "blue",
+            "symbol": "reverse",
+            "description": "This card reverses the direction of gameplay.\n\n                                If your game was going clockwise, the Reverse card would make it counterclockwise.\n\n\n                                You can only put another Reverse card, one with the color blue or a Wild card."
+          },
+          {
+            "id": "card37",
+            "valid": true,
+            "color": "blue",
+            "symbol": "6",
+            "description": "An ordinary UNO card.\n\n\n                                You can only put a card with the number 6, the color blue or a Wild card."
+          },
+          {
+            "id": "card7",
+            "valid": true,
+            "color": "red",
+            "symbol": "3",
+            "description": "An ordinary UNO card.\n\n\n                                You can only put a card with the number 3, the color red or a Wild card."
+          },
+          {
+            "id": "card56",
+            "valid": true,
+            "color": "green",
+            "symbol": "3",
+            "description": "An ordinary UNO card.\n\n\n                                You can only put a card with the number 3, the color green or a Wild card."
+          },
+          {
+            "id": "card61",
+            "valid": true,
+            "color": "green",
+            "symbol": "5",
+            "description": "An ordinary UNO card.\n\n\n                                You can only put a card with the number 5, the color green or a Wild card."
+          },
+          {
+            "id": "card69",
+            "valid": true,
+            "color": "green",
+            "symbol": "9",
+            "description": "An ordinary UNO card.\n\n\n                                You can only put a card with the number 9, the color green or a Wild card."
+          },
+          {
+            "id": "card35",
+            "valid": true,
+            "color": "blue",
+            "symbol": "5",
+            "description": "An ordinary UNO card.\n\n\n                                You can only put a card with the number 5, the color blue or a Wild card."
+          },
+          {
+            "id": "card49",
+            "valid": true,
+            "color": "blue",
+            "symbol": "skip",
+            "description": "This card skips the following player's turn.\n\n\n                                You can only put another Reverse card, one with the color blue or a Wild card."
+          },
+          {
+            "id": "card96",
+            "valid": true,
+            "color": "yellow",
+            "symbol": "draw_2",
+            "description": "The next player has to draw 2 cards from the deck,\n\n                                unless, he puts another \"Draw 2\" or a \"Wild Draw 4\".\n\n\n                                In that case, the number of cards that has to be drawn increases for the subsequent player and so on..."
+          },
+          {
+            "id": "card6",
+            "valid": true,
+            "color": "red",
+            "symbol": "3",
+            "description": "An ordinary UNO card.\n\n\n                                You can only put a card with the number 3, the color red or a Wild card."
+          },
+          {
+            "id": "card107",
+            "valid": true,
+            "color": "black",
+            "symbol": "wild_draw_4",
+            "chosenColor": null,
+            "description": "The next player has to draw 4 cards from the deck, unless, he puts another \"Wild Draw 4\".\n\n                                In that case, the number of cards that has to be drawn increases for the subsequent player and so on...\n\n\n                                The last player in row to place this card determines the color for the next player, unless, he has another Wild card."
+          },
+          {
+            "id": "card51",
+            "valid": true,
+            "color": "green",
+            "symbol": "0",
+            "description": "An ordinary UNO card.\n\n\n                                You can only put a card with the number 0, the color green or a Wild card."
+          }
+        ]
+      },
+      "history": {
+        "type": "HISTORY",
+        "entryListAction": [
+          {
+            "type": "action-place",
+            "player": {
+              "type": "PLAYER",
+              "id": "p1",
+              "name": "user",
+              "deck": {
+                "type": "CARD_DECK",
+                "id": "p1",
+                "name": "p1's card deck",
+                "cardList": [
+                  {
+                    "id": "test01",
+                    "valid": true,
+                    "color": "blue",
+                    "symbol": "0",
+                    "description": "An ordinary UNO card.\n\n\n                                You can only put a card with the number 0, the color blue or a Wild card."
+                  },
+                  {
+                    "id": "test03",
+                    "valid": true,
+                    "color": "green",
+                    "symbol": "1",
+                    "description": "An ordinary UNO card.\n\n\n                                You can only put a card with the number 1, the color green or a Wild card."
+                  },
+                  {
+                    "id": "test04",
+                    "valid": true,
+                    "color": "green",
+                    "symbol": "1",
+                    "description": "An ordinary UNO card.\n\n\n                                You can only put a card with the number 1, the color green or a Wild card."
+                  },
+                  {
+                    "id": "test05",
+                    "valid": true,
+                    "color": "blue",
+                    "symbol": "draw_2",
+                    "description": "The next player has to draw 2 cards from the deck,\n\n                                unless, he puts another \"Draw 2\" or a \"Wild Draw 4\".\n\n\n                                In that case, the number of cards that has to be drawn increases for the subsequent player and so on..."
+                  },
+                  {
+                    "id": "test06",
+                    "valid": true,
+                    "color": "blue",
+                    "symbol": "draw_2",
+                    "description": "The next player has to draw 2 cards from the deck,\n\n                                unless, he puts another \"Draw 2\" or a \"Wild Draw 4\".\n\n\n                                In that case, the number of cards that has to be drawn increases for the subsequent player and so on..."
+                  },
+                  {
+                    "id": "testFS_User",
+                    "valid": true,
+                    "color": "black",
+                    "symbol": "wild_forced_swap",
+                    "chosenColor": null,
+                    "description": "If placed, the player is forced to choose another person to swap cards with.\n\n\n                                He also determines the color which becomes mandatory for the next player, unless, he has another Wild card."
+                  }
+                ]
+              },
+              "stateWon": false,
+              "stateInTurn": true,
+              "stateSkipped": false,
+              "optionalDrawPossible": true,
+              "stateShoutedUno": false,
+              "gamesWon": 0
+            },
+            "card": {
+              "id": "test02",
+              "valid": true,
+              "color": "blue",
+              "symbol": "1",
+              "description": "An ordinary UNO card.\n\n\n                                You can only put a card with the number 1, the color blue or a Wild card."
+            }
+          },
+          {
+            "type": "action-place",
+            "player": {
+              "type": "COMPUTER_PLAYER",
+              "id": "p2",
+              "name": "pc",
+              "deck": {
+                "type": "CARD_DECK",
+                "id": "p2",
+                "name": "p2's card deck",
+                "cardList": [
+                  {
+                    "id": "test08",
+                    "valid": true,
+                    "color": "blue",
+                    "symbol": "1",
+                    "description": "An ordinary UNO card.\n\n\n                                You can only put a card with the number 1, the color blue or a Wild card."
+                  }
+                ]
+              },
+              "stateWon": false,
+              "stateInTurn": false,
+              "stateSkipped": false,
+              "optionalDrawPossible": true,
+              "stateShoutedUno": false,
+              "gamesWon": 0
+            },
+            "card": {
+              "id": "test07",
+              "valid": true,
+              "color": "blue",
+              "symbol": "0",
+              "description": "An ordinary UNO card.\n\n\n                                You can only put a card with the number 0, the color blue or a Wild card."
+            }
+          }
+        ]
+      },
+      "playerInTurnId": "p1"
     }
   ]
 }

@@ -4,57 +4,40 @@ export default function UnoDao(baseurl) {
     this.baseurl = baseurl;
 }
 
-UnoDao.prototype.loadObjects = function(fileName, callback) {
+UnoDao.prototype.load = function(endpoint, callback) {
 
-    if(this.checkFileName(fileName)) {
+    let xhr = this.prepareRequest('GET', `/${endpoint}`);
 
-        let xhr = this.prepareRequest('GET', `/${fileName}`);
-
-        xhr.responseType = 'json';
-        xhr.onload = function() {
-            callback(xhr.response);
-        }
-
-        xhr.send();
-
-    } else {
-        callback('');
+    xhr.responseType = 'json';
+    xhr.onload = function() {
+        callback(xhr.response);
     }
+
+    xhr.send();
 }
 
-UnoDao.prototype.addObject = function(fileName, object, callback) {
-    
-    if(this.checkFileName(fileName)) {
-    
-        let xhr = this.prepareRequest('POST', `/${fileName}`);
+UnoDao.prototype.add = function(endpoint, object, callback) {
 
-        // xhr.setRequestHeader('Content-type', 'application/json');
-        xhr.onload = function() {
-            callback(xhr.response);
-        }
+    let xhr = this.prepareRequest('POST', `/${endpoint}`);
 
-        xhr.send(JSON.stringify(object));
-    } else {
-        callback('');
+    // xhr.setRequestHeader('Content-type', 'application/json');
+    xhr.onload = function() {
+        callback(xhr.response);
     }
+
+    xhr.send(JSON.stringify(object));
 }
 
-UnoDao.prototype.deleteObject = function(fileName, id, callback) {
+UnoDao.prototype.delete = function(endpoint, id, callback) {
     
-    if(this.checkFileName(fileName)) {
-    
-        let xhr = this.prepareRequest('DELETE', `/${fileName}/${id}`);
+    let xhr = this.prepareRequest('DELETE', `/${endpoint}/${id}`);
 
-        xhr.responseType = 'json';
-        xhr.onload = function() {
-            callback(xhr.response);
-        }
-
-        xhr.send();
-
-    } else {
-        callback('');
+    xhr.responseType = 'json';
+    xhr.onload = function() {
+        callback(xhr.response);
     }
+
+    xhr.send();
 }
 
 UnoDao.prototype.prepareRequest = function(method, path) {
@@ -64,12 +47,4 @@ UnoDao.prototype.prepareRequest = function(method, path) {
     xhr.open(method, url);
 
     return xhr;
-}
-
-UnoDao.prototype.checkFileName = function(fileName) {
-    if(fileName != 'decks' && fileName != 'players' && fileName != 'settings') {
-        errorMessage(`${fileName}.json does not exist! (available: decks/players/settings.json)`);
-        return false;
-    }
-    return true;
 }
