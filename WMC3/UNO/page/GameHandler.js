@@ -439,7 +439,7 @@ GameHandler.prototype.checkSpecialCard = function(card, currPlayerId) {
     specialCards['wild_draw_4'] = () => { this.wild(currPlayerId); this.increaseDrawCount(4);}
     specialCards['wild_forced_swap'] = () => {   
         this.forceASwap(currPlayerId);
-        setTimeout(() => this.wild(currPlayerId), 1000);
+        setTimeout(() => this.wild(currPlayerId), 500);
     }
 
     if(inArray(card.symbol, ['draw_2', 'reverse', 'skip', 'wild', 'wild_draw_4', 'wild_forced_swap'])) {

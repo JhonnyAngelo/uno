@@ -39,7 +39,7 @@ export default function ViewHandler(facade, spritesLocation, viewportId, tableId
         this.gameHandler.setCallbackForcedSwap(() => this.startDeckSwapAnimation());
         this.gameHandler.setCallbackGameWon((player) => alert(`${player.name} has won!`));
         this.gameHandler.setCallBackReminder((hide) => this.hide('reminderText', hide));
-        this.gameHandler.setCallbackShoutUNO(() => alert('UNO !!!')); // function later on should either show UNO or PENALTY
+        this.gameHandler.setCallbackShoutUNO(() => alert('UNO !!!'));
 
         // avatar
         this.gameHandler.setCallbackAvatarStateIdle(() => document.getElementById('avatar').src = `${this.spritesLocation}/pc/pc_idle.gif`);
@@ -290,7 +290,7 @@ export default function ViewHandler(facade, spritesLocation, viewportId, tableId
         let user = this.facade.getUser();
 
         // you need to shout UNO if you are about to place your second to last card
-        // or you are about to swap decks with a player who has only 1 card
+        // or if you are about to swap decks with a player who has only 1 card
 
         if(user.getCardCount() == 2 ||
         (user.deck.findCardBySymbol('wild_forced_swap') != -1 && this.gameHandler.getNextPlayer(user.id).getCardCount() == 1) ) {
@@ -577,9 +577,9 @@ export default function ViewHandler(facade, spritesLocation, viewportId, tableId
 
         this.gameHandler.stopGame();
 
-        /*
         // start animation for pc avatar
         let playerInTurn = this.gameHandler.playerInTurn;
+        /*
         if(playerInTurn && playerInTurn.type == 'COMPUTER_PLAYER') {
             // ...
         } else {
