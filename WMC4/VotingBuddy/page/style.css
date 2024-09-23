@@ -1,0 +1,22 @@
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+body > div {
+    width:90dvw;
+    max-width: 750px;
+}
+
+h1 {
+    margin-bottom: 1.5rem;
+}
+
+.container.border {
+    padding: 1em 2em;
+}
+
+body > div div {
+    margin-bottom: 1em;
+}
