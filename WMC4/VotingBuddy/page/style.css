@@ -4,9 +4,14 @@ body {
     align-items: center;
 }
 
-body > div {
-    width:90dvw;
+body > div, body > div > div.container {
+    width:90vw;
     max-width: 750px;
+}
+
+body > div > div.container {
+    margin-left: 0;
+    margin-right: 0;
 }
 
 h1 {
@@ -19,4 +24,13 @@ h1 {
 
 body > div div {
     margin-bottom: 1em;
+}
+
+input.form-control {
+    display: inline;
+    max-width: 50%;
+}
+
+form .btn-primary {
+    width: 7rem;
 }

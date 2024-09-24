@@ -8,16 +8,16 @@ export default function VotingView(votingModel) {
 
 VotingView.prototype.bind = function() {
     this.createTopicBtn.addEventListener('click', () => {
-        this.votingModel.addTopic(new Topic(this.topicInput.value, this.topicInput.value, 0), () => this.render());
+        this.votingModel.addTopic(new Topic(undefined, this.topicInput.value, 0), () => this.reload());
     }); 
 }
 
 VotingView.prototype.render = function() {
     let tbody = document.querySelector('tbody');
     tbody.innerHTML = '';
-    
+
     this.votingModel.sort();
-    
+
     for(let topic of this.votingModel.topicList) {
         let tr = document.createElement('tr');
         tr.id = `${topic.id}`;
@@ -33,13 +33,16 @@ VotingView.prototype.render = function() {
         upvoteBtn.innerHTML = '<i class="fa-solid fa-circle-up"></i>';
         downvoteBtn.innerHTML = '<i class="fa-solid fa-circle-down"></i>';
         
+        if(localStorage.getItem(topic.id) == 'voted') {
+            upvoteBtn.setAttribute("disabled", "disabled");
+            downvoteBtn.setAttribute("disabled", "disabled");
+        }
+
         upvoteBtn.addEventListener('click', () => {
-            this.votingModel.voteUp(tr.id);
-            this.render();
+            this.votingModel.voteUp(tr.id, () => this.render());
         });
         downvoteBtn.addEventListener('click', () => {
-            this.votingModel.voteDown(tr.id);
-            this.render();
+            this.votingModel.voteDown(tr.id, () => this.render());
         });
 
         tr.innerHTML = `<td class="center">${topic.votes}</td>
@@ -54,12 +57,12 @@ VotingView.prototype.render = function() {
 
         tbody.append(tr);
     }
+}
 
-    VotingView.prototype.init = function() {
-        this.reload();
-    }
+VotingView.prototype.init = function() {
+    this.reload();
+}
 
-    VotingView.prototype.reload = function() {
-        this.votingModel.loadTopics(() => this.render);
-    }
+VotingView.prototype.reload = function() {
+    this.votingModel.loadTopics(() => this.render());
 }

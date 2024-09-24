@@ -3,7 +3,7 @@ export default function VotingDao(baseurl) {
 }
 
 VotingDao.prototype.load = function(callback) {
-    let xhr = this.prepareRequest('GET', '/topics');
+    let xhr = this.prepareRequest('GET', '');
     
     xhr.responseType = 'json';
     xhr.onload = function() {
@@ -13,8 +13,8 @@ VotingDao.prototype.load = function(callback) {
     xhr.send();
 }
 
-VotingDao.prototype.addTopic = function(topic, callback) {
-    let xhr = this.prepareRequest('POST', '/topics');
+VotingDao.prototype.add = function(topic, callback) {
+    let xhr = this.prepareRequest('POST', '');
 
     xhr.setRequestHeader("Content-type", "application/json");
 
@@ -25,8 +25,20 @@ VotingDao.prototype.addTopic = function(topic, callback) {
     xhr.send(JSON.stringify(topic));
 }
 
-VotingDao.prototype.deleteTopic = function(topicId, callback) {
-    let xhr = this.prepareRequest('DELETE', `/topics/${topicId}`);
+VotingDao.prototype.update = function(topic, callback) {
+    let xhr = this.prepareRequest('PUT', `/${topic.id}`);
+
+    xhr.setRequestHeader("Content-type", "application/json");
+
+    xhr.onload = function() {
+        callback();
+    }
+
+    xhr.send(JSON.stringify(topic));
+}
+
+VotingDao.prototype.delete = function(topicId, callback) {
+    let xhr = this.prepareRequest('DELETE', `${topicId}`);
 
     xhr.responseType = 'json';
     xhr.onload = function() {
