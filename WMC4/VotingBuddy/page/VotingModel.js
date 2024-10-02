@@ -7,7 +7,6 @@ export default function VotingModel(baseurl) {
 
 VotingModel.prototype.addTopic = function(topic, callback) {
     if(topic && this.getTopicByTitle(topic.title) == null) {
-        alert('adding');
         this.topicList.push(topic);
         this.dao.add(topic, callback);
     }
