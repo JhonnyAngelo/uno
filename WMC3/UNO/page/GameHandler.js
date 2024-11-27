@@ -32,6 +32,8 @@ GameHandler.prototype.setCallbackAvatarStateIdle = function(callback) { this.ava
 
 GameHandler.prototype.setCallbackAvatarStateThinking = function(callback) { this.avatarThinkingCallback = callback; }
 
+GameHandler.prototype.setCallbackAvatarStateDrawing = function(callback) { this.avatarDrawingCallback = callback; }
+
 GameHandler.prototype.setCallbackAvatarStateWon = function(callback) { this.avatarWonCallback = callback; }
 
 
@@ -438,8 +440,11 @@ GameHandler.prototype.checkSpecialCard = function(card, currPlayerId) {
     specialCards['wild'] = () => this.wild(currPlayerId);
     specialCards['wild_draw_4'] = () => { this.wild(currPlayerId); this.increaseDrawCount(4);}
     specialCards['wild_forced_swap'] = () => {   
-        this.forceASwap(currPlayerId);
-        setTimeout(() => this.wild(currPlayerId), 500);
+        let animationDuration = this.forceASwap(currPlayerId);
+        setTimeout(() => {
+            this.wild(currPlayerId);
+            this.setCallbackAvatarStateIdle();
+        }, animationDuration);
     }
 
     if(inArray(card.symbol, ['draw_2', 'reverse', 'skip', 'wild', 'wild_draw_4', 'wild_forced_swap'])) {

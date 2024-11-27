@@ -20,7 +20,6 @@ UnoDao.prototype.add = function(endpoint, object, callback) {
 
     let xhr = this.prepareRequest('POST', `/${endpoint}`);
 
-    // xhr.setRequestHeader('Content-type', 'application/json');
     xhr.onload = function() {
         callback(xhr.response);
     }

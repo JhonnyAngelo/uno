@@ -5,9 +5,9 @@ import Card from './valueObjects/Card.js';
 
 function start() {
     let viewHandler = new ViewHandler(new Facade('http://127.0.0.1:3000'), 'sprites', 'viewport', 'table', 'decks');
-
-    viewHandler.startGame();
-    //startTest(viewHandler);
+    
+    //viewHandler.startGame();
+    startTest(viewHandler);
 }
 
 function startTest(viewHandler) {
@@ -21,7 +21,8 @@ function startTest(viewHandler) {
         new Card('test04', 'green', '1'),
         new Card('test05', 'blue', 'draw_2'),
         new Card('test06', 'blue', 'draw_2'),
-        new Card('testFS_User', 'black', 'wild_forced_swap')
+        new Card('testFS_User', 'black', 'wild_forced_swap'),
+        new Card('testFS_Wild', 'black', 'wild')
     ];
     
     let cardList2 = [ // pc
@@ -30,7 +31,8 @@ function startTest(viewHandler) {
         new Card('test09', 'green', '1'),
         new Card('test10', 'red', 'draw_2'),
         new Card('test11', 'green', 'draw_2'),
-        new Card('test12', 'black', 'wild_draw_4'),
+        new Card('test12', 'green', '1'),
+        //new Card('test12', 'black', 'wild_draw_4'),
         new Card('testFS_Pc', 'black', 'wild_forced_swap')
     ];
 

@@ -5,7 +5,7 @@ import History from './History.js';
 import Snapshot from './Snapshot.js';
 import {errorMessage, inArray} from './help.js';
 
-export default function Facade(baseurl) {
+export default function Facade(baseurl, dao) {
     this.playerList = [];
     this.tableDeck = new CardDeck('tableDeck', 'tDeck');
     this.availableCardsDeck = new CardDeck('availableCardsDeck', 'aDeck');
@@ -170,7 +170,10 @@ Facade.prototype.deletePlayerStats = function(playerId) {}
 
 /* latest snapshot */
 Facade.prototype.loadLatestSnapshot = function() {
-    this.unoDao.load('latestSnapshot/1', (snapshot) => this.latestSnapshot = snapshot);
+    this.unoDao.load('latestSnapshot/1', (snapshot) => {
+        this.latestSnapshot = snapshot
+        console.log('Game Running: ' + this.latestSnapshot.gameRunning);
+    });
 }
 
 Facade.prototype.resumeGame = function() {

@@ -44,7 +44,12 @@ export default function ViewHandler(facade, spritesLocation, viewportId, tableId
         // avatar
         this.gameHandler.setCallbackAvatarStateIdle(() => document.getElementById('avatar').src = `${this.spritesLocation}/pc/pc_idle.gif`);
         this.gameHandler.setCallbackAvatarStateThinking(() => document.getElementById('avatar').src = `${this.spritesLocation}/pc/pc_thinking.gif`);
-        this.gameHandler.setCallbackAvatarStateWon(() => document.getElementById('avatar').src = `${this.spritesLocation}/pc/pc_won.png`);
+        this.gameHandler.setCallbackAvatarStateDrawing(() => document.getElementById('avatar').src = `${this.spritesLocation}/pc/pc_draw.gif`);
+        this.gameHandler.setCallbackAvatarStateWon(() => {
+            this.renderAll();
+            document.getElementById('avatar').src = `${this.spritesLocation}/pc/pc_won.png`;
+            this.gameHandler.stopGame();
+        });
     }
 
     this.clearViewport = function() {
@@ -120,6 +125,7 @@ export default function ViewHandler(facade, spritesLocation, viewportId, tableId
             let cardList = cardDeck.getAllCards();
 
             if(topCardOnly) {
+                console.log( cardList[cardList.length-1] );
                 deckContainer.append(this.getCardImg(cardList[cardList.length-1]));
 
             } else {
@@ -327,9 +333,9 @@ export default function ViewHandler(facade, spritesLocation, viewportId, tableId
 
             if(card.color != 'black') {
                 imgEl.src += `${card.color[0]}_${card.symbol}.png`;
-            } else if(card.getChosenColor() == null) {
+            } else if(card.color == 'black' && card.getChosenColor() == null) {
                 imgEl.src += `w_${card.symbol}.png`;
-            } else {
+            } else if(card.color == 'black') {
                 imgEl.src += `w_${card.symbol}_${card.getChosenColor()[0]}.png`;
             }
             
@@ -485,24 +491,27 @@ export default function ViewHandler(facade, spritesLocation, viewportId, tableId
         formEl.action = `${this.facade.unoDao.baseurl}/settings`;
         pauseScreen.append(formEl);
 
-        formEl.innerHTML = `<div id="pauseScreenContainer">
-        <h1>Settings</h1>
-        <p>Forced Swap Card</p>
+        formEl.innerHTML = 
+        `<div id="pauseScreenContainer">
+            <h1>Settings</h1>
+            <span>
+                <p>Forced Swap Card</p>
         
-        <input type="radio" id="forcedSwapEnabled" name="forcedSwap" value="enabled">
-        <label for="forcedSwapEnabled">Enabled</label>
+                <input type="radio" id="forcedSwapEnabled" name="forcedSwap" value="enabled">
+                <label for="forcedSwapEnabled">Enabled</label>
         
-        <input type="radio" id="forcedSwapDisabled" name="forcedSwap" value="disabled">
-        <label for="forcedSwapDisabled">Disabled</label>
+                <input type="radio" id="forcedSwapDisabled" name="forcedSwap" value="disabled">
+                <label for="forcedSwapDisabled">Disabled</label>
 
-        <p>Be able to stack draw2 & draw4</p>
+                <p>Be able to stack draw2 & draw4</p>
         
-        <input type="radio" id="stackYes" name="drawStacking" value="enabled">
-        <label for="stackYes">Yes</label>
+                <input type="radio" id="stackYes" name="drawStacking" value="enabled">
+                <label for="stackYes">Yes</label>
         
-        <input type="radio" id="stackNo" name="drawStacking" value="disabled">
-        <label for="stackNo">No</label>
-        <div id="pauseScreenButtons"></div>
+                <input type="radio" id="stackNo" name="drawStacking" value="disabled">
+                <label for="stackNo">No</label>
+            </span>
+            <div id="pauseScreenButtons"></div>
         </div>`;
 
         if(this.facade.settings.includeWildForcedSwap == 'enabled')
@@ -544,15 +553,19 @@ export default function ViewHandler(facade, spritesLocation, viewportId, tableId
         btnContainer.append(restartBtn);
         btnContainer.append(continueBtn);
 
+        let settings = this.facade.settings;
+
         restartBtn.onclick = () => {
             
-            if(confirm('If you resart the game, you will loose your progress on this round.\nAre you sure?'))
-                location.reload();
+            if(confirm('If you resart the game, you will loose your progress on this round.\nAre you sure?')) {
+                settings.includeWildForcedSwap = this.getRadioOption('forcedSwap');
+                settings.drawCardIncreasesValue = this.getRadioOption('drawStacking');
+                this.facade.latestSnapshot.gameRunning = false;
+                this.facade.saveSettings(() => location.reload());
+            }
         }
         
         continueBtn.onclick = () => {
-
-            let settings = this.facade.settings;
 
             if(settings.includeWildForcedSwap != this.getRadioOption('forcedSwap') ||
                 settings.drawCardIncreasesValue != this.getRadioOption('drawStacking')) {
@@ -561,6 +574,7 @@ export default function ViewHandler(facade, spritesLocation, viewportId, tableId
 
                     settings.includeWildForcedSwap = this.getRadioOption('forcedSwap');
                     settings.drawCardIncreasesValue = this.getRadioOption('drawStacking');
+                    this.facade.latestSnapshot.gameRunning = false;
                     this.facade.saveSettings(() => location.reload());
                 }
             
@@ -574,15 +588,17 @@ export default function ViewHandler(facade, spritesLocation, viewportId, tableId
     ViewHandler.prototype.startDeckSwapAnimation = function() {
         let user = this.facade.getPlayerByIndex(0);
         let cardCount = user.getCardCount();
+        let duration = 500;
 
         this.gameHandler.stopGame();
 
-        // start animation for pc avatar
+        // start animation for pc avatar if he's in turn
         let playerInTurn = this.gameHandler.playerInTurn;
-        /*
         if(playerInTurn && playerInTurn.type == 'COMPUTER_PLAYER') {
-            // ...
-        } else {
+            this.hide('avatarCards', true);
+            document.getElementById('avatar').src = `${this.spritesLocation}/pc/pc_cardswap.gif`;
+        
+        }/* else {
             // other animation
         }
         */
@@ -607,7 +623,10 @@ export default function ViewHandler(facade, spritesLocation, viewportId, tableId
                 }, 500);
             
             }, 50 * (i+1));
+            duration += 50;
         }
+
+        return duration;
     }
 
     ViewHandler.prototype.selectColor = function() {

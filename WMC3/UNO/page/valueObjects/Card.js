@@ -2,7 +2,8 @@ import {inArray, errorMessage} from '../help.js';
 
 export default function Card(id, color, symbol) {
     this.id = id;
-    this.valid = true; 
+    this.valid = true;
+    this.chosenColor = null;
     
     // valid color
     if(inArray(color, ['red', 'blue', 'green', 'yellow', 'black'])) {

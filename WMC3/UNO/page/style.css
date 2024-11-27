@@ -340,6 +340,12 @@
     margin-bottom: 2em;
 }
 
+body {
+    font-family: "Tiny5", sans-serif;
+    font-weight: 400;
+    font-style: normal;
+}
+
 @media screen and (min-width: 1200px) {
     #settingsForm {
         font-size: larger;
@@ -364,7 +370,7 @@
     }
 }
 
-@media screen and (max-width: 649px) {
+@media screen and (max-width: 650px) {
     #settingsForm {
         font-size: 50%;
     }
@@ -372,8 +378,12 @@
     #pauseScreenButtons {
         position: absolute;
         flex-direction: column;
-        top: 2em;
+        top: 3.5em;
         right: -17em;
+    }
+
+    #pauseScreenContainer #pauseScreenButtons img {
+        width: 30%;
     }
 }
 
@@ -389,7 +399,7 @@
 
 #pauseScreenButtons img {
     padding: 1em 0.5em;
-    width: 30%;
+    width: 15%;
 }
 
 #pauseCover {
