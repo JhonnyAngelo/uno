@@ -59,3 +59,18 @@
 .playerDeck.user .card.shake {
     animation: shakeLarge 0.25s;
 }
+
+.fade {
+    position: fixed;
+    top: 55%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+
+    width: 20rem;
+    opacity: 0;
+    transition: opacity 1s;
+}
+
+.fade.fadeIn {
+    opacity: 1;
+}

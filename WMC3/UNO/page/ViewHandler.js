@@ -17,9 +17,9 @@ export default function ViewHandler(facade, spritesLocation, viewportId, tableId
 
     this.startGame = function(/* test cases: */ deck1, deck2, topCard) {
         this.loadFacade();
-
+        
+        document.getElementById('unoShout').src = `sprites/uno_shout.png`;
         setTimeout(() => {
-            
             this.setCallBacks();
 
             this.gameHandler.startGame(new Player('p1', 'user'), new Player('p2', 'pc', true));
@@ -39,7 +39,7 @@ export default function ViewHandler(facade, spritesLocation, viewportId, tableId
         this.gameHandler.setCallbackForcedSwap(() => this.startDeckSwapAnimation());
         this.gameHandler.setCallbackGameWon((player) => alert(`${player.name} has won!`));
         this.gameHandler.setCallBackReminder((hide) => this.hide('reminderText', hide));
-        this.gameHandler.setCallbackShoutUNO(() => alert('UNO !!!'));
+        this.gameHandler.setCallbackShoutUNO(() => this.shoutUno());
 
         // avatar
         this.gameHandler.setCallbackAvatarStateIdle(() => document.getElementById('avatar').src = `${this.spritesLocation}/pc/pc_idle.gif`);
@@ -663,5 +663,22 @@ export default function ViewHandler(facade, spritesLocation, viewportId, tableId
             }
 
         return null;
+    }
+
+    ViewHandler.prototype.shoutUno = function() {
+        this.fadeIn('unoShout');
+        setTimeout(() => {
+            this.fadeOut('unoShout');
+        }, 600);
+
+        console.log('UNO !!!');
+    }
+
+    ViewHandler.prototype.fadeIn = function(id) {
+        document.getElementById(id).classList.add('fadeIn');
+    }
+    
+    ViewHandler.prototype.fadeOut = function(id) {
+        document.getElementById(id).classList.remove('fadeIn');
     }
 }

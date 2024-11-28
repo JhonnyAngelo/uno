@@ -273,7 +273,7 @@ GameHandler.prototype.determineEnd = function() {
             player.stateWon = true; // for history entry (to see who won)
             player.gamesWon++;
             
-            this.gameWonCallback(player);
+            setTimeout(() => this.gameWonCallback(player), 100);
         
             for(let player of this.facade.getPlayerList()) {
                 player.stateInTurn = false;
@@ -290,7 +290,7 @@ GameHandler.prototype.checkUNO = function(player) {
     if(player.hasUNO()) {
         
         if(player.stateShoutedUno == false) {
-            alert('PENALTY !!!');
+            alert('PENALTY !!!\n(You forgot to shout "UNO!")');
             this.assign(player);
             this.assign(player);
             
@@ -634,6 +634,7 @@ GameHandler.prototype.computerPlaceRandomCard = function(computerPlayer) {
     }
     
     console.log("[PC doesn't have any placeable cards - picking a card from the table...]");
+    // this.avatarDrawingCallback();
     drawnCard = this.optionalDraw(computerPlayer);
     if(drawnCard && this.validCard(drawnCard))
         this.cardPlacementCallback(drawnCard.id);
