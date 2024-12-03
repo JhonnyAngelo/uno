@@ -6,8 +6,8 @@ import Card from './valueObjects/Card.js';
 function start() {
     let viewHandler = new ViewHandler(new Facade('http://127.0.0.1:3000'), 'sprites', 'viewport', 'table', 'decks');
     
-    viewHandler.startGame();
-    //startTest(viewHandler);
+    //viewHandler.startGame();
+    startTest(viewHandler);
 }
 
 function startTest(viewHandler) {
@@ -15,7 +15,7 @@ function startTest(viewHandler) {
     let deck2 = new CardDeck('testDeck2', 'p2');
 
     let cardList1 = [ // user
-        new Card('test01', 'blue', '0'),
+        new Card('test01', 'blue', 'reverse'),
         new Card('test02', 'blue', '1'),
         new Card('test03', 'green', '1'),
         new Card('test04', 'green', '1'),
@@ -26,12 +26,14 @@ function startTest(viewHandler) {
     ];
     
     let cardList2 = [ // pc
+        /*
         new Card('test07', 'blue', '0'),
         new Card('test08', 'blue', '1'),
-        new Card('test09', 'green', '1'),
-        new Card('test10', 'red', 'draw_2'),
-        new Card('test11', 'green', 'draw_2'),
-        new Card('test12', 'green', '1'),
+        */
+        new Card('test09', 'blue', '1'),
+        new Card('test10', 'blue', 'draw_2'),
+        new Card('test11', 'blue', 'draw_2'),
+        //new Card('test12', 'green', '1'),
         //new Card('test12', 'black', 'wild_draw_4'),
         new Card('testFS_Pc', 'black', 'wild_forced_swap')
     ];

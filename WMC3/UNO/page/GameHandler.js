@@ -204,8 +204,8 @@ GameHandler.prototype.makeTurn = function(playerId, cardId) {
         this.facade.removePlayerCard(playerId, cardId);
         this.facade.tableDeck.add(card);
 
-        this.checkSpecialCard(card, playerId);
         this.determineEnd();
+        this.checkSpecialCard(card, playerId);
         this.moveTurn(player);
         
         if(this.facade.getPlayerInTurn())
@@ -266,6 +266,7 @@ GameHandler.prototype.determineEnd = function() {
             
             this.facade.saveSnapshot(false);
 
+            this.renderCallback();
             if(player.type == 'COMPUTER_PLAYER')
                 this.avatarWonCallback();
 
